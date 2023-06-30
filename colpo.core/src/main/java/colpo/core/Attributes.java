@@ -3,6 +3,7 @@
  */
 package colpo.core;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,5 +32,13 @@ public class Attributes {
 		return attributeMap.entrySet().stream()
 			.map(e -> String.format("(%s : %s)", e.getKey(), e.getValue()))
 			.collect(Collectors.joining(", "));
+	}
+
+	public boolean isEmpty() {
+		return attributeMap.isEmpty();
+	}
+
+	public Collection<String> names() {
+		return attributeMap.keySet();
 	}
 }
