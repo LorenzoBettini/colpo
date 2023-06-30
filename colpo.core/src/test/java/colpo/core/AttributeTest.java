@@ -33,4 +33,11 @@ class AttributeTest {
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("'aName' is already present as 'aValue'");
 	}
+
+	@Test
+	void attributesToString() {
+		attributes.add("aName", "aValue")
+			.add("aName1", "aValue1");
+		assertEquals("(aName : aValue), (aName1 : aValue1)", attributes.toString());
+	}
 }

@@ -3,15 +3,16 @@
  */
 package colpo.core;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Lorenzo Bettini
  */
 public class Attributes {
 
-	private Map<String, Object> attributeMap = new HashMap<>();
+	private Map<String, Object> attributeMap = new LinkedHashMap<>();
 
 	public Attributes add(String attributeName, Object attributeValue) {
 		Object previous = attributeMap.put(attributeName, attributeValue);
@@ -23,5 +24,12 @@ public class Attributes {
 
 	public Object name(String attributeName) {
 		return attributeMap.get(attributeName);
+	}
+
+	@Override
+	public String toString() {
+		return attributeMap.entrySet().stream()
+			.map(e -> String.format("(%s : %s)", e.getKey(), e.getValue()))
+			.collect(Collectors.joining(", "));
 	}
 }
