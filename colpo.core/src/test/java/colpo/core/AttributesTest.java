@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AttributeTest {
+class AttributesTest {
 
 	private Attributes attributes;
 
