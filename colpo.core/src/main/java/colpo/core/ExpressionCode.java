@@ -5,5 +5,5 @@ package colpo.core;
  */
 @FunctionalInterface
 public interface ExpressionCode {
-	void runTest() throws Exception; // NOSONAR
+	boolean evaluate() throws Exception; // NOSONAR
 }
