@@ -28,15 +28,21 @@ public class Semantics {
 		// REMEMBER: our indexes start from 1
 		var all = policies.all();
 		var from = request.from();
+		if (from instanceof ParticipantIndex partyIndex) {
+			// this check is only for requests generated during the evaluation
+			// of an exchange: users cannot specify an index for "from"
+			var index = partyIndex.index();
+			return evaluate(index, all.get(index - 1), request);
+		}
 		// exclude the policy of the requester
 		var policyIndexes = IntStream.range(0, all.size())
 				.filter(i -> (i + 1) != request.requester().index());
-		if (from instanceof ParticipantSuchThat fromSuchThat && fromSuchThat.getQuantifier() == Quantifier.ALL) {
+		if (from instanceof ParticipantSuchThat fromSuchThat && fromSuchThat.getQuantifier() == Quantifier.ANY) {
 			return policyIndexes
-				.allMatch(i -> evaluate(i + 1, all.get(i), request));
+				.anyMatch(i -> evaluate(i + 1, all.get(i), request));
 		}
 		return policyIndexes
-			.anyMatch(i -> evaluate(i + 1, all.get(i), request));
+			.allMatch(i -> evaluate(i + 1, all.get(i), request));
 	}
 
 	private boolean evaluate(int i, Policy policy, Request request) {

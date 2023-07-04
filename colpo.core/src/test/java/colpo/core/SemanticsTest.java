@@ -33,6 +33,12 @@ class SemanticsTest {
 				new Attributes()
 					.add("name", "Bob"),
 				new Rules()
+					.add(new Rule(() -> true))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl"),
+				new Rules()
 					.add(new Rule(() -> true))));
 		// from as index is only generated using exchange
 		// so this is just an internal test
