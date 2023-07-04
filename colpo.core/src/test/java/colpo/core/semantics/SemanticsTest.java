@@ -149,12 +149,12 @@ class SemanticsTest {
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: allSuchThat (name : "Bob"))
 		// fails because there's only one Bob
-		assertTrue(semantics.evaluate(
+		assertFalse(semantics.evaluate(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
-				new ParticipantSuchThat(Quantifier.ANY,
+				new ParticipantSuchThat(Quantifier.ALL,
 						new Attributes()
 							.add("name", "Bob"))
 			)
