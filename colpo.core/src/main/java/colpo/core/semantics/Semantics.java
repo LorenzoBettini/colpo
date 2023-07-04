@@ -20,16 +20,20 @@ public class Semantics {
 
 	private Policies policies;
 	private AttributeMatcher matcher = new AttributeMatcher();
+	private Trace trace = new Trace();
 
 	public Semantics(Policies policies) {
 		this.policies = policies;
 	}
 
 	public boolean evaluate(Request request) {
+		trace.reset();
+		trace.add(String.format("evaluating %s", request));
+		trace.addIndent();
 		// REMEMBER: our indexes start from 1
 		var all = policies.all();
 		var from = request.from();
-		return from.accept(new ParticipantVisitor<Boolean>() {
+		var result = from.accept(new ParticipantVisitor<Boolean>() {
 			@Override
 			public Boolean visit(ParticipantIndex participantIndex) {
 				var index = participantIndex.index();
@@ -49,6 +53,9 @@ public class Semantics {
 					.allMatch(i -> evaluate(i + 1, all.get(i), request));
 			}
 		});
+		trace.removeIndent();
+		trace.add(String.format("result: %s", result));
+		return result;
 	}
 
 	private boolean evaluate(int i, Policy policy, Request request) {
@@ -75,11 +82,17 @@ public class Semantics {
 
 	private boolean evaluate(int i, Rule rule, Request request) {
 		try {
-			return rule.getExpression().evaluate();
+			boolean ruleResult = rule.getExpression().evaluate();
+			trace.add(String.format("expression %s -> %s", ruleResult, rule));
+			return ruleResult;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	public Trace getTrace() {
+		return trace;
 	}
 }

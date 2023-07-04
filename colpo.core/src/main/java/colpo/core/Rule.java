@@ -9,8 +9,13 @@ public class Rule {
 	public Rule(ExpressionCode expression) {
 		this.expression = expression;
 	}
-	
+
 	public ExpressionCode getExpression() {
 		return expression;
+	}
+
+	@Override
+	public String toString() {
+		return expression.toString();
 	}
 }

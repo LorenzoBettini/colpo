@@ -1,5 +1,7 @@
 package colpo.core.semantics;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
+import colpo.core.ExpressionWithDescription;
 import colpo.core.ParticipantIndex;
 import colpo.core.ParticipantSuchThat;
 import colpo.core.ParticipantSuchThat.Quantifier;
@@ -21,6 +24,11 @@ class SemanticsTest {
 	private Semantics semantics;
 	private Policies policies;
 
+	private static final ExpressionWithDescription TRUE =
+			new ExpressionWithDescription(() -> true, "true");
+	private static final ExpressionWithDescription FALSE =
+			new ExpressionWithDescription(() -> false, "false");
+
 	@BeforeEach
 	void init() {
 		policies = new Policies();
@@ -34,44 +42,59 @@ class SemanticsTest {
 				new Attributes()
 					.add("name", "Alice"),
 				new Rules()
-					.add(new Rule(() -> false))))
+					.add(new Rule(FALSE))))
 		.add(
 			new Policy( // index 2
 				new Attributes()
 					.add("name", "Bob"),
 				new Rules()
-					.add(new Rule(() -> true))))
+					.add(new Rule(TRUE))))
 		.add(
 			new Policy( // index 3
 				new Attributes()
 					.add("name", "Carl"),
 				new Rules()
-					.add(new Rule(() -> true))));
+					.add(new Rule(TRUE))));
 		// from as index is only generated using exchange
 		// so this is just an internal test
-		assertTrue(semantics.evaluate(
+		assertResultTrue(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes(),
 				new ParticipantIndex(2) // from(r) == Bob (expression = true)
-			)
-		));
-		assertTrue(semantics.evaluate(
+			),
+			"""
+			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=2]]
+			  expression true -> true
+			result: true
+			"""
+		);
+		assertResultTrue(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes(),
 				new ParticipantIndex(3) // from(r) == Carl (expression = true)
-			)
-		));
+			),
+			"""
+			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=3]]
+			  expression true -> true
+			result: true
+			"""
+		);
 		// a requester should not refer to him/herself
 		// this is just an internal test to check correct use of from
-		assertFalse(semantics.evaluate(
+		assertResultFalse(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes(),
 				new ParticipantIndex(1) // from(r) == Alice (expression = false)
-			)
-		));
+			),
+			"""
+			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=1]]
+			  expression false -> false
+			result: false
+			"""
+		);
 	}
 
 	@Test
@@ -136,5 +159,19 @@ class SemanticsTest {
 							.add("name", "Bob"))
 			)
 		));
+	}
+
+	private void assertResultTrue(Request request, String expectedTrace) {
+		assertAll(
+			() -> assertTrue(semantics.evaluate(request)),
+			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
+		);
+	}
+
+	private void assertResultFalse(Request request, String expectedTrace) {
+		assertAll(
+			() -> assertFalse(semantics.evaluate(request)),
+			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
+		);
 	}
 }
