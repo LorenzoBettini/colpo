@@ -1,4 +1,4 @@
-package colpo.core;
+package colpo.core.semantics;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -6,8 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import colpo.core.Attributes;
+import colpo.core.ParticipantIndex;
+import colpo.core.ParticipantSuchThat;
 import colpo.core.ParticipantSuchThat.Quantifier;
-import colpo.core.semantics.Semantics;
+import colpo.core.Policies;
+import colpo.core.Policy;
+import colpo.core.Request;
+import colpo.core.Rule;
+import colpo.core.Rules;
 
 class SemanticsTest {
 
