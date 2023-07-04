@@ -5,4 +5,5 @@ package colpo.core;
  */
 public interface Participant {
 
+	<T> T accept(ParticipantVisitor<T> visitor);
 }

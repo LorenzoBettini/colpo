@@ -21,4 +21,9 @@ public class ParticipantSuchThat implements Participant {
 	public Attributes getAttributes() {
 		return attributes;
 	}
+
+	@Override
+	public <T> T accept(ParticipantVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
 }

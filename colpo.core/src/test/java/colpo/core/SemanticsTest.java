@@ -49,6 +49,13 @@ class SemanticsTest {
 				new ParticipantIndex(2) // from(r) == Bob (expression = true)
 			)
 		));
+		assertTrue(semantics.evaluate(
+			new Request(
+				new ParticipantIndex(1), // Alice
+				new Attributes(),
+				new ParticipantIndex(3) // from(r) == Carl (expression = true)
+			)
+		));
 		// a requester should not refer to him/herself
 		// this is just an internal test to check correct use of from
 		assertFalse(semantics.evaluate(

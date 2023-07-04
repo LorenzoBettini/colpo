@@ -5,6 +5,7 @@ import java.util.stream.IntStream;
 import colpo.core.AttributeMatcher;
 import colpo.core.ParticipantIndex;
 import colpo.core.ParticipantSuchThat;
+import colpo.core.ParticipantVisitor;
 import colpo.core.ParticipantSuchThat.Quantifier;
 import colpo.core.Policies;
 import colpo.core.Policy;
@@ -28,35 +29,46 @@ public class Semantics {
 		// REMEMBER: our indexes start from 1
 		var all = policies.all();
 		var from = request.from();
-		if (from instanceof ParticipantIndex partyIndex) {
-			// this check is only for requests generated during the evaluation
-			// of an exchange: users cannot specify an index for "from"
-			var index = partyIndex.index();
-			return evaluate(index, all.get(index - 1), request);
-		}
-		// exclude the policy of the requester
-		var policyIndexes = IntStream.range(0, all.size())
-				.filter(i -> (i + 1) != request.requester().index());
-		if (from instanceof ParticipantSuchThat fromSuchThat && fromSuchThat.getQuantifier() == Quantifier.ANY) {
-			return policyIndexes
-				.anyMatch(i -> evaluate(i + 1, all.get(i), request));
-		}
-		return policyIndexes
-			.allMatch(i -> evaluate(i + 1, all.get(i), request));
+		return from.accept(new ParticipantVisitor<Boolean>() {
+			@Override
+			public Boolean visit(ParticipantIndex participantIndex) {
+				var index = participantIndex.index();
+				return evaluate(index, all.get(index - 1), request);
+			}
+
+			@Override
+			public Boolean visit(ParticipantSuchThat participantSuchThat) {
+				// exclude the policy of the requester
+				var policyIndexes = IntStream.range(0, all.size())
+						.filter(i -> (i + 1) != request.requester().index());
+				if (participantSuchThat.getQuantifier() == Quantifier.ANY) {
+					return policyIndexes
+						.anyMatch(i -> evaluate(i + 1, all.get(i), request));
+				}
+				return policyIndexes
+					.allMatch(i -> evaluate(i + 1, all.get(i), request));
+			}
+		});
 	}
 
 	private boolean evaluate(int i, Policy policy, Request request) {
 		var from = request.from();
-		if (from instanceof ParticipantIndex index && index.index() == i) {
-			// this check is only for requests generated during the evaluation
-			// of an exchange: users cannot specify an index for "from"
-			return evaluate(i, policy.rules(), request);
-		} else if (from instanceof ParticipantSuchThat fromSuchThat) {
-			if (!matcher.match(fromSuchThat.getAttributes(), policy.party()))
+		return from.accept(new ParticipantVisitor<Boolean>() {
+			@Override
+			public Boolean visit(ParticipantIndex participantIndex) {
+				var index = participantIndex.index();
+				if (index == i)
+					return evaluate(i, policy.rules(), request);
 				return false;
-			return evaluate(i, policy.rules(), request);
-		}
-		return false;
+			}
+
+			@Override
+			public Boolean visit(ParticipantSuchThat participantSuchThat) {
+				if (!matcher.match(participantSuchThat.getAttributes(), policy.party()))
+					return false;
+				return evaluate(i, policy.rules(), request);
+			}
+		});
 	}
 
 	private boolean evaluate(int i, Rules rules, Request request) {
