@@ -56,10 +56,7 @@ public class Semantics {
 		return from.accept(new ParticipantVisitor<Boolean>() {
 			@Override
 			public Boolean visit(ParticipantIndex participantIndex) {
-				var index = participantIndex.index();
-				if (index == i)
-					return evaluate(i, policy.rules(), request);
-				return false;
+				return evaluate(i, policy.rules(), request);
 			}
 
 			@Override
