@@ -53,33 +53,4 @@ class SemanticsTest {
 		));
 	}
 
-//	@Test
-//	void shouldCheckAttributesMatch() {
-//		policies.add(
-//			new Policy( // index 1
-//				new Attributes()
-//					.add("name", "Alice"),
-//				new Rules()
-//					.add(new Rule(() -> false))))
-//		.add(
-//			new Policy( // index 2
-//				new Attributes()
-//					.add("name", "Bob")
-//					.add("resource/name", "aResource"),
-//				new Rules()
-//					.add(new Rule(() -> true))));
-//		// Alice requests
-//		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
-//		assertTrue(semantics.evaluate(
-//			new Request(
-//				new ParticipantIndex(1), // Alice
-//				new Attributes()
-//					.add("resource", "aResource"),
-//				new ParticipantSuchThat(Quantifier.ANY,
-//						new Attributes()
-//							.add("name", "Bob"))
-//			)
-//		));
-//	}
-
 }

@@ -28,7 +28,13 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int i, Policy policy, Request request) {
-		return evaluate(i, policy.rules(), request);
+		var from = request.from();
+		if (from instanceof ParticipantIndex index && index.index() == i) {
+			// this check is only for requests generated during the evaluation
+			// of an exchange: users cannot specify an index for "from"
+			return evaluate(i, policy.rules(), request);
+		}
+		return false;
 	}
 
 	private boolean evaluate(int i, Rules rules, Request request) {
@@ -38,13 +44,7 @@ public class Semantics {
 
 	private boolean evaluate(int i, Rule rule, Request request) {
 		try {
-			var from = request.from();
-			if (from instanceof ParticipantIndex index && index.index() == i) {
-				// this check is only for requests generated during the evaluation
-				// of an exchange: users cannot specify an index for "from"
-				return rule.getExpression().evaluate();
-			}
-			return false;
+			return rule.getExpression().evaluate();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
