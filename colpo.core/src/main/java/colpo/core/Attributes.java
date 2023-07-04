@@ -29,9 +29,11 @@ public class Attributes {
 
 	@Override
 	public String toString() {
-		return attributeMap.entrySet().stream()
+		return "[" +
+			attributeMap.entrySet().stream()
 			.map(e -> String.format("(%s : %s)", e.getKey(), e.getValue()))
-			.collect(Collectors.joining(", "));
+			.collect(Collectors.joining(", ")) +
+			"]";
 	}
 
 	public boolean isEmpty() {

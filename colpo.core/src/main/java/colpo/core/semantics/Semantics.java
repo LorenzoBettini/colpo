@@ -5,8 +5,8 @@ import java.util.stream.IntStream;
 import colpo.core.AttributeMatcher;
 import colpo.core.ParticipantIndex;
 import colpo.core.ParticipantSuchThat;
-import colpo.core.ParticipantVisitor;
 import colpo.core.ParticipantSuchThat.Quantifier;
+import colpo.core.ParticipantVisitor;
 import colpo.core.Policies;
 import colpo.core.Policy;
 import colpo.core.Request;
@@ -68,7 +68,11 @@ public class Semantics {
 
 			@Override
 			public Boolean visit(ParticipantSuchThat participantSuchThat) {
-				if (!matcher.match(participantSuchThat.getAttributes(), policy.party()))
+				var attributes1 = participantSuchThat.getAttributes();
+				var attributes2 = policy.party();
+				boolean matchResult = matcher.match(attributes1, attributes2);
+				trace.add(String.format("%s match(%s, %s)", matchResult, attributes1, attributes2));
+				if (!matchResult)
 					return false;
 				return evaluate(i, policy.rules(), request);
 			}

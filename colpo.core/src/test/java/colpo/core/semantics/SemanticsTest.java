@@ -64,7 +64,7 @@ class SemanticsTest {
 				new ParticipantIndex(2) // from(r) == Bob (expression = true)
 			),
 			"""
-			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=2]]
+			evaluating Request[requester=1, resource=[], from=2]
 			  expression true -> true
 			result: true
 			"""
@@ -76,7 +76,7 @@ class SemanticsTest {
 				new ParticipantIndex(3) // from(r) == Carl (expression = true)
 			),
 			"""
-			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=3]]
+			evaluating Request[requester=1, resource=[], from=3]
 			  expression true -> true
 			result: true
 			"""
@@ -90,7 +90,7 @@ class SemanticsTest {
 				new ParticipantIndex(1) // from(r) == Alice (expression = false)
 			),
 			"""
-			evaluating Request[requester=ParticipantIndex[index=1], resource=, from=ParticipantIndex[index=1]]
+			evaluating Request[requester=1, resource=[], from=1]
 			  expression false -> false
 			result: false
 			"""
@@ -104,14 +104,14 @@ class SemanticsTest {
 				new Attributes()
 					.add("name", "Alice"),
 				new Rules()
-					.add(new Rule(() -> false))))
+					.add(new Rule(FALSE))))
 		.add(
 			new Policy( // index 2
 				new Attributes()
 					.add("role", "Provider")
 					.add("resource/name", "aResource"),
 				new Rules()
-					.add(new Rule(() -> true))))
+					.add(new Rule(TRUE))))
 		.add(
 			new Policy( // index 2
 				new Attributes()
@@ -119,10 +119,10 @@ class SemanticsTest {
 					.add("role", "Provider")
 					.add("resource/name", "aResource"),
 				new Rules()
-					.add(new Rule(() -> true))));
+					.add(new Rule(TRUE))));
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
-		assertTrue(semantics.evaluate(
+		assertResultTrue(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
@@ -130,13 +130,20 @@ class SemanticsTest {
 				new ParticipantSuchThat(Quantifier.ANY,
 						new Attributes()
 							.add("name", "Bob"))
-			)
-		));
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(name : Bob)]]
+			  false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
+			  true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  expression true -> true
+			result: true
+			"""
+		);
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: allSuchThat (role : "Provider"))
 		// NOTE: Alice's policy is not evaluated since she's the requester
 		// her attributes would not match the request
-		assertTrue(semantics.evaluate(
+		assertResultTrue(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
@@ -144,12 +151,20 @@ class SemanticsTest {
 				new ParticipantSuchThat(Quantifier.ALL,
 						new Attributes()
 							.add("role", "Provider"))
-			)
-		));
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
+			  true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
+			  expression true -> true
+			  true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  expression true -> true
+			result: true
+			"""
+		);
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: allSuchThat (name : "Bob"))
 		// fails because there's only one Bob
-		assertFalse(semantics.evaluate(
+		assertResultFalse(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
@@ -157,8 +172,13 @@ class SemanticsTest {
 				new ParticipantSuchThat(Quantifier.ALL,
 						new Attributes()
 							.add("name", "Bob"))
-			)
-		));
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(name : Bob)]]
+			  false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
+			result: false
+			"""
+		);
 	}
 
 	private void assertResultTrue(Request request, String expectedTrace) {

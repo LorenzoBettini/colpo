@@ -13,4 +13,8 @@ public record ParticipantIndex(int index) implements Participant {
 		return visitor.visit(this);
 	}
 
+	@Override
+	public String toString() {
+		return "" + index;
+	}
 }

@@ -26,4 +26,12 @@ public class ParticipantSuchThat implements Participant {
 	public <T> T accept(ParticipantVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s: %s",
+			(quantifier == Quantifier.ANY ? "anySuchThat" : "allSuchThat"),
+			attributes
+		);
+	}
 }
