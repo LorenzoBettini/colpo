@@ -1,7 +1,5 @@
 package colpo.core.semantics;
 
-import java.util.stream.IntStream;
-
 import colpo.core.AttributeMatcher;
 import colpo.core.ParticipantIndex;
 import colpo.core.ParticipantSuchThat;
@@ -31,26 +29,25 @@ public class Semantics {
 		trace.add(String.format("evaluating %s", request));
 		trace.addIndent();
 		// REMEMBER: our indexes start from 1
-		var all = policies.all();
 		var from = request.from();
 		var result = from.accept(new ParticipantVisitor<Boolean>() {
 			@Override
 			public Boolean visit(ParticipantIndex participantIndex) {
 				var index = participantIndex.index();
-				return evaluate(index, all.get(index - 1), request);
+				return evaluate(index, policies.getByIndex(index), request);
 			}
 
 			@Override
 			public Boolean visit(ParticipantSuchThat participantSuchThat) {
 				// exclude the policy of the requester
-				var policyIndexes = IntStream.range(0, all.size())
-						.filter(i -> (i + 1) != request.requester().index());
+				var policyData = policies.getPolicyData()
+						.filter(d -> d.index() != request.requester().index());
 				if (participantSuchThat.getQuantifier() == Quantifier.ANY) {
-					return policyIndexes
-						.anyMatch(i -> evaluate(i + 1, all.get(i), request));
+					return policyData
+						.anyMatch(d -> evaluate(d.index(), d.policy(), request));
 				}
-				return policyIndexes
-					.allMatch(i -> evaluate(i + 1, all.get(i), request));
+				return policyData
+					.allMatch(d -> evaluate(d.index(), d.policy(), request));
 			}
 		});
 		trace.removeIndent();
