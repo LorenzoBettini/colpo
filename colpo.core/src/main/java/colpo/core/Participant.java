@@ -22,12 +22,16 @@ public class Participant {
 		this.attributes = attributes;
 	}
 
-	public static Participant participantIndex(int index) {
+	public static Participant index(int index) {
 		return new Participant(index);
 	}
 
-	public static Participant participantsSuchThat(Quantifier quantifier, Attributes attributes) {
-		return new Participant(quantifier, attributes);
+	public static Participant anySuchThat(Attributes attributes) {
+		return new Participant(Quantifier.ANY, attributes);
+	}
+
+	public static Participant allSuchThat(Attributes attributes) {
+		return new Participant(Quantifier.ALL, attributes);
 	}
 
 	public int getIndex() {
