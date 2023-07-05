@@ -2,6 +2,7 @@ package colpo.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -30,5 +31,11 @@ public class Policies {
 
 	public Policy getByIndex(int i) {
 		return collection.get(i - 1);
+	}
+
+	public String description() {
+		return getPolicyData()
+			.map(d -> d.index + " = " + d.policy.toString())
+			.collect(Collectors.joining("\n")) + "\n";
 	}
 }

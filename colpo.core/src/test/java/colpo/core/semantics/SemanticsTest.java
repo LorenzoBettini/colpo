@@ -55,6 +55,11 @@ class SemanticsTest {
 					.add("name", "Carl"),
 				new Rules()
 					.add(new Rule(TRUE))));
+		assertPolicies("""
+		1 = Policy[party=[(name : Alice)], rules=[resource=false]]
+		2 = Policy[party=[(name : Bob)], rules=[resource=true]]
+		3 = Policy[party=[(name : Carl)], rules=[resource=true]]
+		""");
 		// from as index is only generated using exchange
 		// so this is just an internal test
 		assertResultTrue(
@@ -65,7 +70,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=2]
-			  expression true -> true
+			  expression resource=true -> true
 			result: true
 			"""
 		);
@@ -77,7 +82,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=3]
-			  expression true -> true
+			  expression resource=true -> true
 			result: true
 			"""
 		);
@@ -91,7 +96,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=1]
-			  expression false -> false
+			  expression resource=false -> false
 			result: false
 			"""
 		);
@@ -120,6 +125,11 @@ class SemanticsTest {
 					.add("resource/name", "aResource"),
 				new Rules()
 					.add(new Rule(TRUE))));
+		assertPolicies("""
+			1 = Policy[party=[(name : Alice)], rules=[resource=false]]
+			2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=true]]
+			3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=true]]
+			""");
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
 		assertResultTrue(
@@ -135,7 +145,7 @@ class SemanticsTest {
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(name : Bob)]]
 			  false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
 			  true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  expression true -> true
+			  expression resource=true -> true
 			result: true
 			"""
 		);
@@ -155,9 +165,9 @@ class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
 			  true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			  expression true -> true
+			  expression resource=true -> true
 			  true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  expression true -> true
+			  expression resource=true -> true
 			result: true
 			"""
 		);
@@ -179,6 +189,10 @@ class SemanticsTest {
 			result: false
 			"""
 		);
+	}
+
+	private void assertPolicies(String expected) {
+		assertEquals(expected, policies.description());
 	}
 
 	private void assertResultTrue(Request request, String expectedTrace) {

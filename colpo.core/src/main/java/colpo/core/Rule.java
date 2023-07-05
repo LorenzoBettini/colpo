@@ -16,6 +16,6 @@ public class Rule {
 
 	@Override
 	public String toString() {
-		return expression.toString();
+		return "resource=" + expression.toString();
 	}
 }

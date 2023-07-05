@@ -19,4 +19,9 @@ public class Rules {
 	public Collection<Rule> all() {
 		return collection;
 	}
+
+	@Override
+	public String toString() {
+		return collection.toString();
+	}
 }

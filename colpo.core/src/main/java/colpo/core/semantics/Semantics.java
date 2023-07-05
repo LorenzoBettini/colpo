@@ -84,7 +84,7 @@ public class Semantics {
 	private boolean evaluate(int i, Rule rule, Request request) {
 		try {
 			boolean ruleResult = rule.getExpression().evaluate();
-			trace.add(String.format("expression %s -> %s", ruleResult, rule));
+			trace.add(String.format("expression %s -> %s", rule, ruleResult));
 			return ruleResult;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
