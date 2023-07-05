@@ -3,6 +3,7 @@ package colpo.core.semantics;
 import java.util.Collection;
 
 import colpo.core.AttributeMatcher;
+import colpo.core.EvaluationContext;
 import colpo.core.ParticipantIndex;
 import colpo.core.ParticipantSuchThat;
 import colpo.core.ParticipantSuchThat.Quantifier;
@@ -87,7 +88,12 @@ public class Semantics {
 
 	private boolean evaluate(int index, Rule rule, Request request) {
 		try {
-			boolean ruleResult = rule.getExpression().evaluate();
+			boolean ruleResult = rule.getExpression().evaluate(new EvaluationContext() {
+				@Override
+				public Object attribute(String name) {
+					return request.resource().name(name);
+				}
+			});
 			trace.add(String.format("%d: expression %s -> %s", index, rule, ruleResult));
 			return ruleResult;
 		} catch (Exception e) {

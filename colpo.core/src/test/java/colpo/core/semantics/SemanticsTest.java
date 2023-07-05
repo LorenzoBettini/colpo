@@ -25,9 +25,9 @@ class SemanticsTest {
 	private Policies policies;
 
 	private static final ExpressionWithDescription TRUE =
-			new ExpressionWithDescription(() -> true, "true");
+			new ExpressionWithDescription(context -> true, "true");
 	private static final ExpressionWithDescription FALSE =
-			new ExpressionWithDescription(() -> false, "false");
+			new ExpressionWithDescription(context -> false, "false");
 
 	@BeforeEach
 	void init() {
@@ -230,7 +230,11 @@ class SemanticsTest {
 					.add("role", "Provider")
 					.add("resource/name", "aResource"),
 				new Rules()
-					.add(new Rule(FALSE))))
+					.add(new Rule(
+						new ExpressionWithDescription(
+							c -> "read".equals(c.attribute("resource/usage")),
+							"resource/usage = read")
+						))))
 		.add(
 			new Policy( // index 3
 				new Attributes()
@@ -238,56 +242,70 @@ class SemanticsTest {
 					.add("role", "Provider")
 					.add("resource/name", "aResource"),
 				new Rules()
-					.add(new Rule(TRUE))));
+					.add(new Rule(
+						new ExpressionWithDescription(
+							c -> "read".equals(c.attribute("resource/usage")) ||
+									"write".equals(c.attribute("resource/usage")),
+							"resource/usage = read or resource/usage = write")
+						))));
 		assertPolicies("""
 			1 = Policy[party=[(name : Alice)], rules=[resource=false]]
-			2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=false]]
-			3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=true]]
+			2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=resource/usage = read]]
+			3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=resource/usage = read or resource/usage = write]]
 			""");
-		// NOTE: Alice's policy is not evaluated since she's the requester
-		// her attributes would not match the request
-		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: allSuchThat (role : "Provider"))
-		// fails because the first provider has a rule evaluating to false
-		// and we asked allSuchThat
 		assertResultFalse(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
-					.add("resource", "aResource"),
+					.add("resource/usage", "write"),
 				new ParticipantSuchThat(Quantifier.ALL,
 						new Attributes()
 							.add("role", "Provider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
+			evaluating Request[requester=1, resource=[(resource/usage : write)], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  2: expression resource=false -> false
+			  2: expression resource=resource/usage = read -> false
 			result: false
 			"""
 		);
-		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: allSuchThat (role : "Provider"))
-		// succeeds because even if the first provider has a rule evaluating to false
-		// and we asked allSuchThat
 		assertResultTrue(
 			new Request(
 				new ParticipantIndex(1), // Alice
 				new Attributes()
-					.add("resource", "aResource"),
+					.add("resource/usage", "read"),
+				new ParticipantSuchThat(Quantifier.ALL,
+						new Attributes()
+							.add("role", "Provider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/usage : read)], from=allSuchThat: [(role : Provider)]]
+			  finding matching policies
+			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  2: expression resource=resource/usage = read -> true
+			  3: expression resource=resource/usage = read or resource/usage = write -> true
+			result: true
+			"""
+		);
+		assertResultTrue(
+			new Request(
+				new ParticipantIndex(1), // Alice
+				new Attributes()
+					.add("resource/usage", "write"),
 				new ParticipantSuchThat(Quantifier.ANY,
 						new Attributes()
 							.add("role", "Provider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(role : Provider)]]
+			evaluating Request[requester=1, resource=[(resource/usage : write)], from=anySuchThat: [(role : Provider)]]
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  2: expression resource=false -> false
-			  3: expression resource=true -> true
+			  2: expression resource=resource/usage = read -> false
+			  3: expression resource=resource/usage = read or resource/usage = write -> true
 			result: true
 			"""
 		);

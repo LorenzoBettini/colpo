@@ -11,8 +11,8 @@ public class ExpressionWithDescription implements ExpressionCode {
 	}
 
 	@Override
-	public boolean evaluate() throws Exception {
-		return expressionCode.evaluate();
+	public boolean evaluate(EvaluationContext context) throws Exception {
+		return expressionCode.evaluate(context);
 	}
 
 	@Override
