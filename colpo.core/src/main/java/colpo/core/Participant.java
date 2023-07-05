@@ -13,13 +13,21 @@ public class Participant {
 		ANY, ALL
 	}
 
-	public Participant(int index) {
+	private Participant(int index) {
 		this.index = index;
 	}
 
-	public Participant(Quantifier quantifier, Attributes attributes) {
+	private Participant(Quantifier quantifier, Attributes attributes) {
 		this.quantifier = quantifier;
 		this.attributes = attributes;
+	}
+
+	public static Participant participantIndex(int index) {
+		return new Participant(index);
+	}
+
+	public static Participant participantsSuchThat(Quantifier quantifier, Attributes attributes) {
+		return new Participant(quantifier, attributes);
 	}
 
 	public int getIndex() {
