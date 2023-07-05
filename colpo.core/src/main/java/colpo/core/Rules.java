@@ -9,14 +9,14 @@ import java.util.List;
  */
 public class Rules {
 
-	private List<Rule> rules = new ArrayList<>();
+	private List<Rule> collection = new ArrayList<>();
 
 	public Rules add(Rule rule) {
-		rules.add(rule);
+		collection.add(rule);
 		return this;
 	}
 
 	public Collection<Rule> all() {
-		return rules;
+		return collection;
 	}
 }

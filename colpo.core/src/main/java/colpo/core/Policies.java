@@ -8,14 +8,14 @@ import java.util.List;
  */
 public class Policies {
 
-	private List<Policy> policies = new ArrayList<>();
+	private List<Policy> collection = new ArrayList<>();
 
 	public Policies add(Policy policy) {
-		policies.add(policy);
+		collection.add(policy);
 		return this;
 	}
 
 	public List<Policy> all() {
-		return policies;
+		return collection;
 	}
 }
