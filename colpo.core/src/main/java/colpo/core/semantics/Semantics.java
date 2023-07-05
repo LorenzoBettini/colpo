@@ -4,10 +4,8 @@ import java.util.Collection;
 
 import colpo.core.AttributeMatcher;
 import colpo.core.EvaluationContext;
-import colpo.core.ParticipantIndex;
-import colpo.core.ParticipantSuchThat;
-import colpo.core.ParticipantSuchThat.Quantifier;
-import colpo.core.ParticipantVisitor;
+import colpo.core.Participant;
+import colpo.core.Participant.Quantifier;
 import colpo.core.Policies;
 import colpo.core.Policies.PolicyData;
 import colpo.core.Policy;
@@ -34,38 +32,33 @@ public class Semantics {
 		trace.addIndent();
 		// REMEMBER: our indexes start from 1
 		var from = request.from();
-		var result = from.accept(new ParticipantVisitor<Boolean>() {
-			@Override
-			public Boolean visit(ParticipantIndex participantIndex) {
-				var index = participantIndex.index();
-				return evaluate(index, policies.getByIndex(index), request);
-			}
-
-			@Override
-			public Boolean visit(ParticipantSuchThat participantSuchThat) {
-				trace.add("finding matching policies");
-				trace.addIndent();
-				var policiesToEvaluate = policiesToEvaluate(request.requester(), participantSuchThat);
-				trace.removeIndent();
-				if (policiesToEvaluate.isEmpty())
-					return false;
-				if (participantSuchThat.getQuantifier() == Quantifier.ANY) {
-					return policiesToEvaluate.stream()
-						.anyMatch(d -> evaluate(d.index(), d.policy(), request));
-				}
-				return policiesToEvaluate.stream()
+		var index = from.getIndex();
+		boolean result = false;
+		if (index > 0)
+			result = evaluate(index, policies.getByIndex(index), request);
+		else {
+			trace.add("finding matching policies");
+			trace.addIndent();
+			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
+			trace.removeIndent();
+			if (policiesToEvaluate.isEmpty())
+				result = false;
+			else if (from.getQuantifier() == Quantifier.ANY) {
+				result = policiesToEvaluate.stream()
+					.anyMatch(d -> evaluate(d.index(), d.policy(), request));
+			} else
+				result = policiesToEvaluate.stream()
 					.allMatch(d -> evaluate(d.index(), d.policy(), request));
-			}
-		});
+		}
 		trace.removeIndent();
 		trace.add(String.format("result: %s", result));
 		return result;
 	}
 
-	private Collection<PolicyData> policiesToEvaluate(ParticipantIndex requester,
-			ParticipantSuchThat from) {
+	private Collection<PolicyData> policiesToEvaluate(Participant requester,
+			Participant from) {
 		return policies.getPolicyData()
-			.filter(d -> d.index() != requester.index())
+			.filter(d -> d.index() != requester.getIndex())
 			.filter(d -> {
 				var attributes1 = from.getAttributes();
 				var attributes2 = d.policy().party();

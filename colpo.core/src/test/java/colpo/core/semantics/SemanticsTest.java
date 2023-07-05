@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
 import colpo.core.ExpressionWithDescription;
-import colpo.core.ParticipantIndex;
-import colpo.core.ParticipantSuchThat;
-import colpo.core.ParticipantSuchThat.Quantifier;
+import colpo.core.Participant;
+import colpo.core.Participant.Quantifier;
 import colpo.core.Policies;
 import colpo.core.Policy;
 import colpo.core.Request;
@@ -64,9 +63,9 @@ class SemanticsTest {
 		// so this is just an internal test
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes(),
-				new ParticipantIndex(2) // from(r) == Bob (expression = true)
+				new Participant(2) // from(r) == Bob (expression = true)
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=2]
@@ -76,9 +75,9 @@ class SemanticsTest {
 		);
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes(),
-				new ParticipantIndex(3) // from(r) == Carl (expression = true)
+				new Participant(3) // from(r) == Carl (expression = true)
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=3]
@@ -90,9 +89,9 @@ class SemanticsTest {
 		// this is just an internal test to check correct use of from
 		assertResultFalse(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes(),
-				new ParticipantIndex(1) // from(r) == Alice (expression = false)
+				new Participant(1) // from(r) == Alice (expression = false)
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=1]
@@ -134,10 +133,10 @@ class SemanticsTest {
 		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
-				new ParticipantSuchThat(Quantifier.ANY,
+				new Participant(Quantifier.ANY,
 						new Attributes()
 							.add("name", "Bob"))
 			),
@@ -156,10 +155,10 @@ class SemanticsTest {
 		// her attributes would not match the request
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
-				new ParticipantSuchThat(Quantifier.ALL,
+				new Participant(Quantifier.ALL,
 						new Attributes()
 							.add("role", "Provider"))
 			),
@@ -178,10 +177,10 @@ class SemanticsTest {
 		// even if there's only one Bob
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
-				new ParticipantSuchThat(Quantifier.ALL,
+				new Participant(Quantifier.ALL,
 						new Attributes()
 							.add("name", "Bob"))
 			),
@@ -199,10 +198,10 @@ class SemanticsTest {
 		// and there's no Carl
 		assertResultFalse(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
-				new ParticipantSuchThat(Quantifier.ALL,
+				new Participant(Quantifier.ALL,
 						new Attributes()
 							.add("name", "Carl"))
 			),
@@ -268,10 +267,10 @@ class SemanticsTest {
 			""");
 		assertResultFalse(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource/usage", "write"),
-				new ParticipantSuchThat(Quantifier.ALL,
+				new Participant(Quantifier.ALL,
 						new Attributes()
 							.add("role", "Provider"))
 			),
@@ -287,10 +286,10 @@ class SemanticsTest {
 		);
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource/usage", "read"),
-				new ParticipantSuchThat(Quantifier.ALL,
+				new Participant(Quantifier.ALL,
 						new Attributes()
 							.add("role", "Provider"))
 			),
@@ -307,10 +306,10 @@ class SemanticsTest {
 		);
 		assertResultTrue(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource/usage", "write"),
-				new ParticipantSuchThat(Quantifier.ANY,
+				new Participant(Quantifier.ANY,
 						new Attributes()
 							.add("role", "Provider"))
 			),
@@ -327,10 +326,10 @@ class SemanticsTest {
 		);
 		assertResultFalse(
 			new Request(
-				new ParticipantIndex(1), // Alice
+				new Participant(1), // Alice
 				new Attributes()
 					.add("resource/usage", "write"),
-				new ParticipantSuchThat(Quantifier.ANY,
+				new Participant(Quantifier.ANY,
 						new Attributes()
 							.add("role", "SpecialProvider"))
 			),
