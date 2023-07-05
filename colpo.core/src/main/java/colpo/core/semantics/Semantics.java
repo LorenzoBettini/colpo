@@ -90,15 +90,17 @@ public class Semantics {
 		try {
 			boolean ruleResult = rule.getExpression().evaluate(new EvaluationContext() {
 				@Override
-				public Object attribute(String name) {
-					return request.resource().name(name);
+				public Object attribute(String name) throws UndefinedName {
+					var value = request.resource().name(name);
+					if (value == null)
+						throw new UndefinedName(name);
+					return value;
 				}
 			});
 			trace.add(String.format("%d: expression %s -> %s", index, rule, ruleResult));
 			return ruleResult;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			trace.add(String.format("%d: expression %s -> false: %s", index, rule, e.getMessage()));
 			return false;
 		}
 	}

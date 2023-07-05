@@ -247,11 +247,24 @@ class SemanticsTest {
 							c -> "read".equals(c.attribute("resource/usage")) ||
 									"write".equals(c.attribute("resource/usage")),
 							"resource/usage = read or resource/usage = write")
+						))))
+		.add(
+			new Policy( // index 4
+				new Attributes()
+					.add("name", "Carl")
+					.add("role", "SpecialProvider")
+					.add("resource/name", "aResource"),
+				new Rules()
+					.add(new Rule(
+						new ExpressionWithDescription(
+							c -> "read".equals(c.attribute("resource/access")),
+							"resource/access = read")
 						))));
 		assertPolicies("""
 			1 = Policy[party=[(name : Alice)], rules=[resource=false]]
 			2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=resource/usage = read]]
 			3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=resource/usage = read or resource/usage = write]]
+			4 = Policy[party=[(name : Carl), (role : SpecialProvider), (resource/name : aResource)], rules=[resource=resource/access = read]]
 			""");
 		assertResultFalse(
 			new Request(
@@ -267,6 +280,7 @@ class SemanticsTest {
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
 			  2: expression resource=resource/usage = read -> false
 			result: false
 			"""
@@ -285,6 +299,7 @@ class SemanticsTest {
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
 			  2: expression resource=resource/usage = read -> true
 			  3: expression resource=resource/usage = read or resource/usage = write -> true
 			result: true
@@ -304,9 +319,29 @@ class SemanticsTest {
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
 			  2: expression resource=resource/usage = read -> false
 			  3: expression resource=resource/usage = read or resource/usage = write -> true
 			result: true
+			"""
+		);
+		assertResultFalse(
+			new Request(
+				new ParticipantIndex(1), // Alice
+				new Attributes()
+					.add("resource/usage", "write"),
+				new ParticipantSuchThat(Quantifier.ANY,
+						new Attributes()
+							.add("role", "SpecialProvider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/usage : write)], from=anySuchThat: [(role : SpecialProvider)]]
+			  finding matching policies
+			    2: false match([(role : SpecialProvider)], [(role : Provider), (resource/name : aResource)])
+			    3: false match([(role : SpecialProvider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    4: true match([(role : SpecialProvider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
+			  4: expression resource=resource/access = read -> false: Undefined name: resource/access
+			result: false
 			"""
 		);
 	}
