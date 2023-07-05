@@ -143,8 +143,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(name : Bob)]]
-			  2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			  3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			  3: expression resource=true -> true
 			result: true
 			"""
@@ -164,8 +165,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
-			  2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			  3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			  2: expression resource=true -> true
 			  3: expression resource=true -> true
 			result: true
@@ -185,8 +187,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(name : Bob)]]
-			  2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			  3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			  3: expression resource=true -> true
 			result: true
 			"""
@@ -205,8 +208,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(name : Carl)]]
-			  2: false match([(name : Carl)], [(role : Provider), (resource/name : aResource)])
-			  3: false match([(name : Carl)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: false match([(name : Carl)], [(role : Provider), (resource/name : aResource)])
+			    3: false match([(name : Carl)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			result: false
 			"""
 		);
@@ -257,8 +261,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
-			  2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			  3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			  2: expression resource=false -> false
 			result: false
 			"""
@@ -278,8 +283,9 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(role : Provider)]]
-			  2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			  3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			  finding matching policies
+			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			  2: expression resource=false -> false
 			  3: expression resource=true -> true
 			result: true

@@ -42,7 +42,10 @@ public class Semantics {
 
 			@Override
 			public Boolean visit(ParticipantSuchThat participantSuchThat) {
+				trace.add("finding matching policies");
+				trace.addIndent();
 				var policiesToEvaluate = policiesToEvaluate(request.requester(), participantSuchThat);
+				trace.removeIndent();
 				if (policiesToEvaluate.isEmpty())
 					return false;
 				if (participantSuchThat.getQuantifier() == Quantifier.ANY) {
