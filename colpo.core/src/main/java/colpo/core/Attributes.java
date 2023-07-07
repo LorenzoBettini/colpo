@@ -6,6 +6,7 @@ package colpo.core;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -42,5 +43,22 @@ public class Attributes {
 
 	public Collection<String> names() {
 		return attributeMap.keySet();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(attributeMap);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Attributes other = (Attributes) obj;
+		return Objects.equals(attributeMap, other.attributeMap);
 	}
 }
