@@ -450,6 +450,131 @@ class SemanticsTest {
 		);
 	}
 
+	@Test
+	void simpleMutualExchange2() {
+		// Alice gives printer provided the requester gives paper
+		// Bob gives white paper provided the requester has name Carl
+		// Carl gives paper provided the requester gives printer
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider")
+					.add("resource/type", "printer"),
+				new Rules()
+					.add(new Rule(TRUE,
+						new Exchange(
+							requester(),
+							new Attributes()
+								.add("resource/type", "paper"),
+							me())))))
+			.add(
+				new Policy( // index 2
+					new Attributes()
+						.add("name", "Bob")
+						.add("role", "PaperProvider")
+						.add("resource/type", "paper"),
+					new Rules()
+						.add(new Rule(
+							new ExpressionWithDescription(
+								c -> "white".equals(c.attribute("paper/color")),
+								"paper/color = white"
+							),
+							new Exchange(
+								requester(),
+								new Attributes()
+									.add("resource/type", "printer"),
+								me()
+							))
+						)))
+			.add(
+				new Policy( // index 3
+					new Attributes()
+						.add("name", "Carl")
+						.add("role", "PaperProvider")
+						.add("resource/type", "paper"),
+					new Rules()
+						.add(new Rule(TRUE,
+							new Exchange(
+								requester(),
+								new Attributes()
+									.add("resource/type", "printer"),
+								me())))));
+		assertPolicies("""
+			1 = Policy[party=[(name : Alice), (role : PrinterProvider), (resource/type : printer)], rules=[resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]]]
+			2 = Policy[party=[(name : Bob), (role : PaperProvider), (resource/type : paper)], rules=[resource=paper/color = white, exchange=Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]]]
+			3 = Policy[party=[(name : Carl), (role : PaperProvider), (resource/type : paper)], rules=[resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]]]
+			""");
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("resource/type", "paper"),
+				anySuchThat(new Attributes()
+					.add("role", "PaperProvider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/type : paper)], from=anySuchThat: [(role : PaperProvider)]]
+			  finding matching policies
+			    2: true match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider), (resource/type : paper)])
+			    3: true match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider), (resource/type : paper)])
+			  2: expression paper/color = white -> false: Undefined name: paper/color
+			  3: expression true -> true
+			  3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			  evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
+			    1: expression true -> true
+			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      3: expression true -> true
+			      3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			      3: satisfied Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			    result: true
+			  result: true
+			result: true
+			"""
+		);
+		// Alice gets paper from Bob
+		// not from Carl, because he wants printer from requester (Alice)
+		// Alice gives printer to who gives paper, but Carl only gives white paper
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("resource/type", "paper")
+					.add("paper/color", "white"),
+				anySuchThat(new Attributes()
+					.add("role", "PaperProvider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/type : paper), (paper/color : white)], from=anySuchThat: [(role : PaperProvider)]]
+			  finding matching policies
+			    2: true match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider), (resource/type : paper)])
+			    3: true match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider), (resource/type : paper)])
+			  2: expression paper/color = white -> true
+			  2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			  evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
+			    1: expression true -> true
+			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      2: expression paper/color = white -> false: Undefined name: paper/color
+			    result: false
+			  result: false
+			  3: expression true -> true
+			  3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			  evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
+			    1: expression true -> true
+			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      3: expression true -> true
+			      3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			      3: satisfied Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
+			    result: true
+			  result: true
+			result: true
+			"""
+		);
+	}
+
 	private void assertPolicies(String expected) {
 		assertEquals(expected, policies.description());
 	}
