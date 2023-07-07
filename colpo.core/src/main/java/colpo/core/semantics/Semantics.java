@@ -2,6 +2,7 @@ package colpo.core.semantics;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import colpo.core.AttributeMatcher;
@@ -31,7 +32,7 @@ public class Semantics {
 
 	public boolean evaluate(Request request) {
 		trace.reset();
-		return evaluate(request, new LinkedHashSet<Request>());
+		return evaluate(request, new LinkedHashSet<>(List.of(request)));
 	}
 
 	private boolean evaluate(Request request, Set<Request> R) {
@@ -113,7 +114,7 @@ public class Semantics {
 	private boolean evaluate(int index, Exchange exchange, Request request, Set<Request> R) {
 		var exchangeRequest = new Request(
 			Participant.index(index),
-			request.resource(),
+			exchange.resource(),
 			request.requester());
 		if (R.contains(exchangeRequest)) {
 			trace.add(String.format("%d: satisfied %s", index, exchange));

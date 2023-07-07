@@ -383,7 +383,7 @@ class SemanticsTest {
 			    1: true match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider), (resource/type : printer)])
 			  1: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME] -> true
 			  1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
-			  evaluating Request[requester=1, resource=[(resource/type : printer)], from=2]
+			  evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			    2: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME] -> true
 			    2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
 			    evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
