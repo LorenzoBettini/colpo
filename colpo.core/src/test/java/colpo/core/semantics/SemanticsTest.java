@@ -69,7 +69,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=2]
-			  2: expression resource=true -> true
+			  2: expression true -> true
 			result: true
 			"""
 		);
@@ -81,7 +81,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=3]
-			  3: expression resource=true -> true
+			  3: expression true -> true
 			result: true
 			"""
 		);
@@ -95,7 +95,7 @@ class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], from=1]
-			  1: expression resource=false -> false
+			  1: expression false -> false
 			result: false
 			"""
 		);
@@ -144,7 +144,7 @@ class SemanticsTest {
 			  finding matching policies
 			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  3: expression resource=true -> true
+			  3: expression true -> true
 			result: true
 			"""
 		);
@@ -165,8 +165,8 @@ class SemanticsTest {
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  2: expression resource=true -> true
-			  3: expression resource=true -> true
+			  2: expression true -> true
+			  3: expression true -> true
 			result: true
 			"""
 		);
@@ -186,7 +186,7 @@ class SemanticsTest {
 			  finding matching policies
 			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  3: expression resource=true -> true
+			  3: expression true -> true
 			result: true
 			"""
 		);
@@ -275,7 +275,7 @@ class SemanticsTest {
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
-			  2: expression resource=resource/usage = read -> false
+			  2: expression resource/usage = read -> false
 			result: false
 			"""
 		);
@@ -293,8 +293,8 @@ class SemanticsTest {
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
-			  2: expression resource=resource/usage = read -> true
-			  3: expression resource=resource/usage = read or resource/usage = write -> true
+			  2: expression resource/usage = read -> true
+			  3: expression resource/usage = read or resource/usage = write -> true
 			result: true
 			"""
 		);
@@ -312,8 +312,8 @@ class SemanticsTest {
 			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			    4: false match([(role : Provider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
-			  2: expression resource=resource/usage = read -> false
-			  3: expression resource=resource/usage = read or resource/usage = write -> true
+			  2: expression resource/usage = read -> false
+			  3: expression resource/usage = read or resource/usage = write -> true
 			result: true
 			"""
 		);
@@ -331,7 +331,7 @@ class SemanticsTest {
 			    2: false match([(role : SpecialProvider)], [(role : Provider), (resource/name : aResource)])
 			    3: false match([(role : SpecialProvider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
 			    4: true match([(role : SpecialProvider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
-			  4: expression resource=resource/access = read -> false: Undefined name: resource/access
+			  4: expression resource/access = read -> false: Undefined name: resource/access
 			result: false
 			"""
 		);
@@ -381,13 +381,13 @@ class SemanticsTest {
 			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    1: true match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider), (resource/type : printer)])
-			  1: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME] -> true
+			  1: expression true -> true
 			  1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
 			  evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
-			    2: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME] -> true
+			    2: expression true -> true
 			    2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
 			    evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
-			      1: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME] -> true
+			      1: expression true -> true
 			      1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
 			      1: satisfied Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
 			    result: true

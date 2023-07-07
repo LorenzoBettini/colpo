@@ -97,16 +97,17 @@ public class Semantics {
 					return value;
 				}
 			});
-			trace.add(String.format("%d: expression %s -> %s", index, rule, result));
+			trace.add(String.format("%d: expression %s -> %s", index, rule.getExpression(), result));
+			if (!result)
+				return false;
 			var exchange = rule.getExchange();
 			if (exchange != null) {
 				trace.add(String.format("%d: evaluating %s", index, exchange));
-				// TODO: and with the previous result
-				evaluate(index, exchange, request, R);
+				result = evaluate(index, exchange, request, R);
 			}
 			return result;
 		} catch (Exception e) {
-			trace.add(String.format("%d: expression %s -> false: %s", index, rule, e.getMessage()));
+			trace.add(String.format("%d: expression %s -> false: %s", index, rule.getExpression(), e.getMessage()));
 			return false;
 		}
 	}
