@@ -453,7 +453,7 @@ class SemanticsTest {
 	@Test
 	void simpleMutualExchange2() {
 		// Alice gives printer provided the requester gives paper
-		// Bob gives white paper provided the requester has name Carl
+		// Bob gives white paper provided the requester gives printer
 		// Carl gives paper provided the requester gives printer
 		policies.add(
 			new Policy( // index 1
@@ -533,9 +533,9 @@ class SemanticsTest {
 			result: true
 			"""
 		);
-		// Alice gets paper from Bob
-		// not from Carl, because he wants printer from requester (Alice)
-		// Alice gives printer to who gives paper, but Carl only gives white paper
+		// Alice gets paper from Carl
+		// not from Bob, because he wants printer from requester (Alice)
+		// Alice gives printer to who gives paper, but Bob only gives white paper
 		assertResultTrue(
 			new Request(
 				index(1), // Alice
