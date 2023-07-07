@@ -339,6 +339,59 @@ class SemanticsTest {
 
 	@Test
 	void simpleExchange() {
+		// Alice gives printer provided the requester gives paper
+		// Bob gives paper
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider")
+					.add("resource/type", "printer"),
+				new Rules()
+					.add(new Rule(TRUE,
+						new Exchange(
+							requester(),
+							new Attributes()
+								.add("resource/type", "paper"),
+							me())))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider")
+					.add("resource/type", "paper"),
+				new Rules()
+					.add(new Rule(TRUE))));
+		assertPolicies("""
+			1 = Policy[party=[(name : Alice), (role : PrinterProvider), (resource/type : printer)], rules=[resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]]]
+			2 = Policy[party=[(name : Bob), (role : PaperProvider), (resource/type : paper)], rules=[resource=true]]
+			""");
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    1: true match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider), (resource/type : printer)])
+			  1: expression true -> true
+			  1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
+			  evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			    2: expression true -> true
+			  result: true
+			result: true
+			"""
+		);
+	}
+
+	@Test
+	void simpleMutualExchange() {
+		// Alice gives printer provided the requester gives paper
+		// Bob gives paper provided the requester gives printer
 		policies.add(
 			new Policy( // index 1
 				new Attributes()
