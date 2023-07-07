@@ -1,8 +1,6 @@
 package colpo.core.semantics;
 
-import static colpo.core.Participant.allSuchThat;
-import static colpo.core.Participant.anySuchThat;
-import static colpo.core.Participant.index;
+import static colpo.core.Participant.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
+import colpo.core.Exchange;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.Policies;
 import colpo.core.Policy;
@@ -334,6 +333,57 @@ class SemanticsTest {
 			    4: true match([(role : SpecialProvider)], [(name : Carl), (role : SpecialProvider), (resource/name : aResource)])
 			  4: expression resource=resource/access = read -> false: Undefined name: resource/access
 			result: false
+			"""
+		);
+	}
+
+	@Test
+	void simpleExchange() {
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider")
+					.add("resource/type", "printer"),
+				new Rules()
+					.add(new Rule(TRUE,
+						new Exchange(
+							requester(),
+							new Attributes()
+								.add("resource/type", "paper"),
+							me())))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider")
+					.add("resource/type", "paper"),
+				new Rules()
+					.add(new Rule(TRUE,
+						new Exchange(
+							requester(),
+							new Attributes()
+								.add("resource/type", "printer"),
+							me())))));
+		assertPolicies("""
+			1 = Policy[party=[(name : Alice), (role : PrinterProvider), (resource/type : printer)], rules=[resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]]]
+			2 = Policy[party=[(name : Bob), (role : PaperProvider), (resource/type : paper)], rules=[resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]]]
+			""");
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    1: true match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider), (resource/type : printer)])
+			  1: expression resource=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME] -> true
+			  1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
+			result: true
 			"""
 		);
 	}

@@ -29,7 +29,7 @@ public class Rule {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("resource=");
 		stringBuilder.append(expression.toString());
-		stringBuilder.append((exchange != null ? "exchange=" + exchange.toString() : ""));
+		stringBuilder.append((exchange != null ? ", exchange=" + exchange.toString() : ""));
 		return stringBuilder.toString();
 	}
 }

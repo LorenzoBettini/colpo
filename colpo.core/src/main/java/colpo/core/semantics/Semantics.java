@@ -81,7 +81,7 @@ public class Semantics {
 
 	private boolean evaluate(int index, Rule rule, Request request) {
 		try {
-			boolean ruleResult = rule.getExpression().evaluate(new EvaluationContext() {
+			boolean expressionResult = rule.getExpression().evaluate(new EvaluationContext() {
 				@Override
 				public Object attribute(String name) throws UndefinedName {
 					var value = request.resource().name(name);
@@ -90,8 +90,12 @@ public class Semantics {
 					return value;
 				}
 			});
-			trace.add(String.format("%d: expression %s -> %s", index, rule, ruleResult));
-			return ruleResult;
+			trace.add(String.format("%d: expression %s -> %s", index, rule, expressionResult));
+			var exchange = rule.getExchange();
+			if (exchange != null) {
+				trace.add(String.format("%d: evaluating %s", index, exchange));
+			}
+			return expressionResult;
 		} catch (Exception e) {
 			trace.add(String.format("%d: expression %s -> false: %s", index, rule, e.getMessage()));
 			return false;
