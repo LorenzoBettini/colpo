@@ -118,7 +118,7 @@ public class Semantics {
 			exchange.resource(),
 			request.requester());
 		if (R.contains(exchangeRequest)) {
-			trace.add(String.format("%d: satisfied %s", index, exchange));
+			trace.add(String.format("%d: satisfied %s", index, exchangeRequest));
 			return true;
 		}
 		R.add(exchangeRequest);
