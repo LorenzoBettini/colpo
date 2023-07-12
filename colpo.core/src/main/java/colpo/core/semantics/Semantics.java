@@ -101,8 +101,12 @@ public class Semantics {
 				return false;
 			var exchange = rule.getExchange();
 			if (exchange != null) {
+				var processedRequest = new Request(
+					request.requester(), request.resource(), Participant.index(index));
+				R.add(processedRequest);
 				trace.add(String.format("%d: evaluating %s", index, exchange));
 				result = evaluate(index, exchange, request, R);
+				R.remove(processedRequest);
 			}
 			return result;
 		} catch (Exception e) {

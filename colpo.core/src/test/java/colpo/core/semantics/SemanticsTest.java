@@ -439,11 +439,7 @@ class SemanticsTest {
 			  evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			    2: expression true -> true
 			    2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
-			    evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
-			      1: expression true -> true
-			      1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
-			      1: satisfied Request[requester=1, resource=[(resource/type : paper)], from=2]
-			    result: true
+			    2: satisfied Request[requester=2, resource=[(resource/type : printer)], from=1]
 			  result: true
 			result: true
 			"""
@@ -526,11 +522,7 @@ class SemanticsTest {
 			  evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    1: expression true -> true
 			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
-			      3: expression true -> true
-			      3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
-			      3: satisfied Request[requester=3, resource=[(resource/type : printer)], from=1]
-			    result: true
+			    1: satisfied Request[requester=1, resource=[(resource/type : paper)], from=3]
 			  result: true
 			result: true
 			"""
@@ -690,11 +682,7 @@ class SemanticsTest {
 			  evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    1: expression true -> true
 			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
-			      3: expression true -> true
-			      3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
-			      3: satisfied Request[requester=3, resource=[(resource/type : printer)], from=1]
-			    result: true
+			    1: satisfied Request[requester=1, resource=[(resource/type : paper)], from=3]
 			  result: true
 			result: true
 			"""
@@ -726,11 +714,7 @@ class SemanticsTest {
 			    result: false
 			    1: expression true -> true
 			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper), (paper/color : white)], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper), (paper/color : white)], from=2]
-			      2: expression paper/color = white -> true
-			      2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
-			      2: satisfied Request[requester=2, resource=[(resource/type : printer)], from=1]
-			    result: true
+			    1: satisfied Request[requester=1, resource=[(resource/type : paper), (paper/color : white)], from=2]
 			  result: true
 			result: true
 			"""
@@ -760,11 +744,7 @@ class SemanticsTest {
 			    result: false
 			    1: expression true -> true
 			    1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper), (paper/color : white)], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper), (paper/color : white)], from=2]
-			      2: expression paper/color = white -> true
-			      2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
-			      2: satisfied Request[requester=2, resource=[(resource/type : printer)], from=1]
-			    result: true
+			    1: satisfied Request[requester=1, resource=[(resource/type : paper), (paper/color : white)], from=2]
 			  result: true
 			  3: expression true -> true
 			  3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], to=ME]
