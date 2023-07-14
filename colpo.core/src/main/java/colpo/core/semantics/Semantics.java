@@ -124,10 +124,7 @@ public class Semantics {
 			trace.add(String.format("%d: satisfied %s", index, exchangeRequest));
 			return true;
 		}
-		R.add(exchangeRequest);
-		var result = evaluate(exchangeRequest, R);
-		R.remove(exchangeRequest);
-		return result;
+		return evaluate(exchangeRequest, R);
 	}
 
 	public Trace getTrace() {
