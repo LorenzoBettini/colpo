@@ -10,5 +10,5 @@ import colpo.core.semantics.UndefinedName;
  */
 public interface EvaluationContext {
 
-	Object attribute(String name) throws UndefinedName;
+	Object name(String name) throws UndefinedName;
 }

@@ -75,27 +75,28 @@ public class Semantics {
 			.toList();
 	}
 
-	private boolean evaluate(int i, Policy policy, Request request, Set<Request> R) {
-		return evaluate(i, policy.rules(), request, R);
+	private boolean evaluate(int policyIndex, Policy policy, Request request, Set<Request> R) {
+		return evaluate(policyIndex, policy.rules(), request, R);
 	}
 
-	private boolean evaluate(int index, Rules rules, Request request, Set<Request> R) {
-		return rules.all().stream()
-			.anyMatch(rule -> evaluate(index, rule, request, R));
+	private boolean evaluate(int policyIndex, Rules rules, Request request, Set<Request> R) {
+		return rules.getRuleData()
+			.anyMatch(r -> evaluate(policyIndex, r.index(), r.rule(), request, R));
 	}
 
-	private boolean evaluate(int index, Rule rule, Request request, Set<Request> R) {
+	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> R) {
 		try {
-			boolean result = rule.getCondition().evaluate(new EvaluationContext() {
+			boolean result;
+			result = rule.getCondition().evaluate(new EvaluationContext() {
 				@Override
-				public Object attribute(String name) throws UndefinedName {
+				public Object name(String name) throws UndefinedName {
 					var value = request.resource().name(name);
 					if (value == null)
 						throw new UndefinedName(name);
 					return value;
 				}
 			});
-			trace.add(String.format("%d: condition %s -> %s", index, rule.getCondition(), result));
+			trace.add(String.format("%d: condition %s -> %s", policyIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
 //			var exchange = rule.getExchange();
@@ -109,7 +110,7 @@ public class Semantics {
 //			}
 			return result;
 		} catch (Exception e) {
-			trace.add(String.format("%d: condition %s -> false: %s", index, rule.getCondition(), e.getMessage()));
+			trace.add(String.format("%d: condition %s -> false: %s", policyIndex, rule.getCondition(), e.getMessage()));
 			return false;
 		}
 	}

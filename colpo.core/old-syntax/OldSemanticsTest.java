@@ -101,6 +101,98 @@ class SemanticsTest {
 		);
 	}
 
+	// TODO: finish after trace update
+	@Test
+	void shouldCheckRuleMatch() {
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice"),
+				new Rules()
+					.add(new Rule())))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "black")
+					))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						FALSE
+					))))
+		.add(
+			new Policy( // index 4
+				new Attributes()
+					.add("name", "David"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						new ExpressionWithDescription(
+							c -> c.name("file/format").equals("PDF"),
+							"file/format = PDF"
+						)
+					))))
+		.add(
+			new Policy( // index 5
+				new Attributes()
+					.add("name", "Edward"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						new ExpressionWithDescription(
+							c -> c.name("job/role").equals("writer"),
+							"job/role = writer"
+						)
+					))));
+		assertPolicies("""
+		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
+		2 = Policy[party=[(name : Bob)], rules=[resource=[(paper : black)], condition=true]]
+		3 = Policy[party=[(name : Carl)], rules=[resource=[(paper : white)], condition=always false]]
+		4 = Policy[party=[(name : David)], rules=[resource=[(paper : white)], condition=file/format = PDF]]
+		5 = Policy[party=[(name : Edward)], rules=[resource=[(paper : white)], condition=job/role = writer]]
+		""");
+		// Alice requests
+		// ( resource: (paper : white), from: 2)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(2)
+			),
+			"""
+			evaluating Request[requester=1, resource=[], credentials=[], from=2]
+			  2: condition true -> true
+			result: true
+			"""
+		);
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes(),
+				new Attributes(),
+				index(3)
+			),
+			"""
+			evaluating Request[requester=1, resource=[], credentials=[], from=3]
+			  3: condition true -> true
+			result: true
+			"""
+		);
+	}
+
 	// TODO: change it: this does not check attributes
 	// it only checks whether parties match
 	@Test

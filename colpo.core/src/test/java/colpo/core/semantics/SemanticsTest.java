@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
+import colpo.core.ExpressionWithDescription;
 import colpo.core.Policies;
 import colpo.core.Policy;
 import colpo.core.Request;
@@ -22,6 +23,9 @@ public class SemanticsTest {
 
 	private Semantics semantics;
 	private Policies policies;
+
+	private static final ExpressionWithDescription FALSE =
+			new ExpressionWithDescription(context -> false, "always false");
 
 	@BeforeEach
 	void init() {
