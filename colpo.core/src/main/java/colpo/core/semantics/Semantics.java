@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import colpo.core.AttributeMatcher;
+import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
 import colpo.core.Participant;
 import colpo.core.Participant.Quantifier;
@@ -67,35 +68,47 @@ public class Semantics {
 			.filter(d -> {
 				var attributes1 = from.getAttributes();
 				var attributes2 = d.policy().party();
-				boolean matchResult = matcher.match(attributes1, attributes2);
-				trace.add(String.format("%d: %s match(%s, %s)",
-					d.index(), matchResult, attributes1, attributes2));
-				return matchResult;
+				return tryMatch("policy", d.index(), "from", attributes1, attributes2);
 			})
 			.toList();
 	}
 
-	private boolean evaluate(int i, Policy policy, Request request, Set<Request> R) {
-		return evaluate(i, policy.rules(), request, R);
+	private boolean tryMatch(String prefix, int index, String description, Attributes attributes1, Attributes attributes2) {
+		boolean matchResult = matcher.match(attributes1, attributes2);
+		trace.add(String.format("%s %d: %s match(%s, %s) -> %s",
+			prefix, index, description, attributes1, attributes2, matchResult));
+		return matchResult;
 	}
 
-	private boolean evaluate(int index, Rules rules, Request request, Set<Request> R) {
-		return rules.all().stream()
-			.anyMatch(rule -> evaluate(index, rule, request, R));
+	private boolean evaluate(int policyIndex, Policy policy, Request request, Set<Request> R) {
+		trace.add(String.format("policy %d: evaluating rules",
+				policyIndex));
+		trace.addIndent();
+		var result = evaluate(policyIndex, policy.rules(), request, R);
+		trace.removeIndent();
+		return result;
 	}
 
-	private boolean evaluate(int index, Rule rule, Request request, Set<Request> R) {
+	private boolean evaluate(int policyIndex, Rules rules, Request request, Set<Request> R) {
+		return rules.getRuleData()
+			.anyMatch(r -> evaluate(policyIndex, r.index(), r.rule(), request, R));
+	}
+
+	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> R) {
 		try {
-			boolean result = rule.getCondition().evaluate(new EvaluationContext() {
+			boolean result = tryMatch("rule", ruleIndex, "resource", request.resource(), rule.getResource());
+			if (!result)
+				return false;
+			result = rule.getCondition().evaluate(new EvaluationContext() {
 				@Override
-				public Object attribute(String name) throws UndefinedName {
+				public Object name(String name) throws UndefinedName {
 					var value = request.resource().name(name);
 					if (value == null)
 						throw new UndefinedName(name);
 					return value;
 				}
 			});
-			trace.add(String.format("%d: condition %s -> %s", index, rule.getCondition(), result));
+			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
 //			var exchange = rule.getExchange();
@@ -109,7 +122,7 @@ public class Semantics {
 //			}
 			return result;
 		} catch (Exception e) {
-			trace.add(String.format("%d: condition %s -> false: %s", index, rule.getCondition(), e.getMessage()));
+			trace.add(String.format("%d: condition %s -> false: %s", policyIndex, rule.getCondition(), e.getMessage()));
 			return false;
 		}
 	}
