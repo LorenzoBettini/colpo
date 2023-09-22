@@ -4,20 +4,40 @@ package colpo.core;
  * @author Lorenzo Bettini
  */
 public class Rule {
-	private ExpressionCode expression;
+
+	private static final ExpressionWithDescription TRUE =
+			new ExpressionWithDescription(context -> true, "true");
+
+	private Attributes resource;
+	private ExpressionCode condition = TRUE;
 	private Exchange exchange;
 
-	public Rule(ExpressionCode expression) {
-		this.expression = expression;
+	public Rule(Attributes resource) {
+		this.resource = resource;
 	}
 
-	public Rule(ExpressionCode expression, Exchange exchange) {
-		this.expression = expression;
+	public Rule(Attributes resource, ExpressionCode condition) {
+		this.resource = resource;
+		this.condition = condition;
+	}
+
+	public Rule(Attributes resource, Exchange exchange) {
+		this.resource = resource;
 		this.exchange = exchange;
 	}
 
-	public ExpressionCode getExpression() {
-		return expression;
+	public Rule(Attributes resource, ExpressionCode condition, Exchange exchange) {
+		this.resource = resource;
+		this.condition = condition;
+		this.exchange = exchange;
+	}
+
+	public Attributes getResource() {
+		return resource;
+	}
+
+	public ExpressionCode getCondition() {
+		return condition;
 	}
 
 	public Exchange getExchange() {
@@ -28,7 +48,9 @@ public class Rule {
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("resource=");
-		stringBuilder.append(expression.toString());
+		stringBuilder.append(resource.toString());
+		stringBuilder.append(", condition=");
+		stringBuilder.append(condition.toString());
 		stringBuilder.append((exchange != null ? ", exchange=" + exchange.toString() : ""));
 		return stringBuilder.toString();
 	}
