@@ -104,6 +104,8 @@ public class Semantics {
 				public Object name(String name) throws UndefinedName {
 					var value = request.resource().name(name);
 					if (value == null)
+						value = request.credentials().name(name);
+					if (value == null)
 						throw new UndefinedName(name);
 					return value;
 				}
@@ -122,7 +124,7 @@ public class Semantics {
 //			}
 			return result;
 		} catch (Exception e) {
-			trace.add(String.format("%d: condition %s -> false: %s", policyIndex, rule.getCondition(), e.getMessage()));
+			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
 			return false;
 		}
 	}

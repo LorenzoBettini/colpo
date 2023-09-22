@@ -93,6 +93,181 @@ public class SemanticsTest {
 	}
 
 	@Test
+	void shouldCheckRuleMatch() {
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice"),
+				new Rules()
+					.add(new Rule())))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "black")
+					))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						FALSE
+					))))
+		.add(
+			new Policy( // index 4
+				new Attributes()
+					.add("name", "David"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white")
+							.add("file/format", "PDF"),
+						// the expression seems redundant,
+						// but it checks that the requester asks
+						// for both attributes
+						new ExpressionWithDescription(
+							c -> c.name("file/format").equals("PDF"),
+							"file/format = PDF"
+						)
+					))))
+		.add(
+			new Policy( // index 5
+				new Attributes()
+					.add("name", "Edward"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						new ExpressionWithDescription(
+							c -> c.name("job/role").equals("writer"),
+							"job/role = writer"
+						)
+					))));
+		assertPolicies("""
+		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
+		2 = Policy[party=[(name : Bob)], rules=[resource=[(paper : black)], condition=true]]
+		3 = Policy[party=[(name : Carl)], rules=[resource=[(paper : white)], condition=always false]]
+		4 = Policy[party=[(name : David)], rules=[resource=[(paper : white), (file/format : PDF)], condition=file/format = PDF]]
+		5 = Policy[party=[(name : Edward)], rules=[resource=[(paper : white)], condition=job/role = writer]]
+		""");
+		// Alice requests
+		// ( resource: (paper : white), from: 2)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(2)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=2]
+			  policy 2: evaluating rules
+			    rule 1: resource match([(paper : white)], [(paper : black)]) -> false
+			result: false
+			"""
+		);
+		// Alice requests
+		// ( resource: (paper : white), from: 3)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(3)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
+			  policy 3: evaluating rules
+			    rule 1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 1: condition always false -> false
+			result: false
+			"""
+		);
+		// Alice requests
+		// ( resource: (paper : white), from: 4)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(4)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=4]
+			  policy 4: evaluating rules
+			    rule 1: resource match([(paper : white)], [(paper : white), (file/format : PDF)]) -> true
+			    rule 1: condition file/format = PDF -> Undefined name: file/format
+			result: false
+			"""
+		);
+		// Alice requests
+		// ( resource: (paper : white)(file : PDF), from: 4)
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white")
+					.add("file/format", "PDF"),
+				new Attributes(),
+				index(4)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white), (file/format : PDF)], credentials=[], from=4]
+			  policy 4: evaluating rules
+			    rule 1: resource match([(paper : white), (file/format : PDF)], [(paper : white), (file/format : PDF)]) -> true
+			    rule 1: condition file/format = PDF -> true
+			result: true
+			"""
+		);
+		// Alice requests
+		// ( resource: (paper : white), from: 5)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(5)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=5]
+			  policy 5: evaluating rules
+			    rule 1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 1: condition job/role = writer -> Undefined name: job/role
+			result: false
+			"""
+		);
+		// Alice requests
+		// ( resource: (paper : white), credentials: (job/role : writer), from: 5)
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes()
+					.add("job/role", "writer"),
+				index(5)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=5]
+			  policy 5: evaluating rules
+			    rule 1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 1: condition job/role = writer -> true
+			result: true
+			"""
+		);
+	}
+
+	@Test
 	void shouldCheckAnyAndAllSuchThat() {
 		policies.add(
 			new Policy( // index 1
