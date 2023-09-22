@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
-import colpo.core.ExpressionWithDescription;
 import colpo.core.Policies;
 import colpo.core.Policy;
 import colpo.core.Request;
@@ -23,9 +22,6 @@ public class SemanticsTest {
 
 	private Semantics semantics;
 	private Policies policies;
-
-	private static final ExpressionWithDescription FALSE =
-			new ExpressionWithDescription(context -> false, "false");
 
 	@BeforeEach
 	void init() {
@@ -40,19 +36,19 @@ public class SemanticsTest {
 				new Attributes()
 					.add("name", "Alice"),
 				new Rules()
-					.add(new Rule(new Attributes()))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 2
 				new Attributes()
 					.add("name", "Bob"),
 				new Rules()
-					.add(new Rule(new Attributes()))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 3
 				new Attributes()
 					.add("name", "Carl"),
 				new Rules()
-					.add(new Rule(new Attributes()))));
+					.add(new Rule())));
 		assertPolicies("""
 		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
 		2 = Policy[party=[(name : Bob)], rules=[resource=[], condition=true]]
@@ -95,20 +91,20 @@ public class SemanticsTest {
 				new Attributes()
 					.add("name", "Alice"),
 				new Rules()
-					.add(new Rule(new Attributes()))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 2
 				new Attributes()
 					.add("role", "Provider"),
 				new Rules()
-					.add(new Rule(new Attributes()))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 3
 				new Attributes()
 					.add("name", "Bob")
 					.add("role", "Provider"),
 				new Rules()
-					.add(new Rule(new Attributes()))));
+					.add(new Rule())));
 		assertPolicies("""
 		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
 		2 = Policy[party=[(role : Provider)], rules=[resource=[], condition=true]]
@@ -128,8 +124,8 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=anySuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    2: false match([(name : Bob)], [(role : Provider)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
 			  3: condition true -> true
 			result: true
 			"""
@@ -150,8 +146,8 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
-			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    2: true match([(role : Provider)], [(role : Provider)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider)])
 			  2: condition true -> true
 			  3: condition true -> true
 			result: true
@@ -172,8 +168,8 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    2: false match([(name : Bob)], [(role : Provider)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
 			  3: condition true -> true
 			result: true
 			"""
@@ -193,8 +189,8 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Carl)]]
 			  finding matching policies
-			    2: false match([(name : Carl)], [(role : Provider), (resource/name : aResource)])
-			    3: false match([(name : Carl)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    2: false match([(name : Carl)], [(role : Provider)])
+			    3: false match([(name : Carl)], [(name : Bob), (role : Provider)])
 			result: false
 			"""
 		);
