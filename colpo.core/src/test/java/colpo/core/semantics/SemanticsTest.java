@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.Attributes;
-import colpo.core.Exchange;
+import colpo.core.SingleExchange;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.Policies;
 import colpo.core.Policy;
@@ -399,7 +399,7 @@ public class SemanticsTest {
 					.add(new Rule(
 						new Attributes()
 							.add("resource/type", "printer"),
-						new Exchange(
+						new SingleExchange(
 							requester(),
 							new Attributes()
 								.add("resource/type", "paper"),

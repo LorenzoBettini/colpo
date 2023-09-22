@@ -12,7 +12,7 @@ public class Rule {
 
 	private final Attributes resource;
 	private final ExpressionCode condition;
-	private final Exchange exchange;
+	private final SingleExchange exchange;
 
 	public Rule() {
 		this(EMPTY_ATTRIBUTES, TRUE, null);
@@ -26,11 +26,11 @@ public class Rule {
 		this(resource, condition, null);
 	}
 
-	public Rule(Attributes resource, Exchange exchange) {
+	public Rule(Attributes resource, SingleExchange exchange) {
 		this(resource, TRUE, exchange);
 	}
 
-	public Rule(Attributes resource, ExpressionCode condition, Exchange exchange) {
+	public Rule(Attributes resource, ExpressionCode condition, SingleExchange exchange) {
 		this.resource = resource;
 		this.condition = condition;
 		this.exchange = exchange;
@@ -44,7 +44,7 @@ public class Rule {
 		return condition;
 	}
 
-	public Exchange getExchange() {
+	public SingleExchange getExchange() {
 		return exchange;
 	}
 

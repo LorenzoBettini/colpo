@@ -7,7 +7,7 @@ import java.util.Set;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
-import colpo.core.Exchange;
+import colpo.core.SingleExchange;
 import colpo.core.Participant;
 import colpo.core.Participant.Quantifier;
 import colpo.core.Policies;
@@ -133,7 +133,7 @@ public class Semantics {
 		}
 	}
 
-	private boolean evaluate(int policyIndex, Exchange exchange, Request request, Set<Request> R) {
+	private boolean evaluate(int policyIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		var exchangeRequest = new Request(
 			Participant.index(policyIndex),
 			exchange.resource(),
