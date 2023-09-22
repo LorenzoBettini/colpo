@@ -2,6 +2,7 @@ package colpo.core;
 
 import static colpo.core.Participant.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,17 @@ class RequestTest {
 	void testEqualsAndHashCodeEmpty() {
 		assertThat(new Request(null, null, null, null))
 			.isEqualTo(new Request(null, null, null, null));
+	}
+
+	@Test
+	void testInvalidFromAndRequesterAreTheSame() {
+		// this is fine, it checks indexes only if the first one is > 0
+		new Request(index(0), null, null, index(1));
+		// this is invalid
+		Participant sameIndex = index(1);
+		assertThatThrownBy(() -> new Request(sameIndex, null, null, sameIndex))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("requester and from are the same: 1");
 	}
 
 	@Test
