@@ -99,22 +99,20 @@ public class SemanticsTest {
 		.add(
 			new Policy( // index 2
 				new Attributes()
-					.add("role", "Provider")
-					.add("resource/name", "aResource"),
+					.add("role", "Provider"),
 				new Rules()
 					.add(new Rule(new Attributes()))))
 		.add(
 			new Policy( // index 3
 				new Attributes()
 					.add("name", "Bob")
-					.add("role", "Provider")
-					.add("resource/name", "aResource"),
+					.add("role", "Provider"),
 				new Rules()
 					.add(new Rule(new Attributes()))));
 		assertPolicies("""
 		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
-		2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=[], condition=true]]
-		3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=[], condition=true]]
+		2 = Policy[party=[(role : Provider)], rules=[resource=[], condition=true]]
+		3 = Policy[party=[(name : Bob), (role : Provider)], rules=[resource=[], condition=true]]
 			""");
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
