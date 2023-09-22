@@ -122,7 +122,7 @@ public class Semantics {
 					request.credentials(),
 					Participant.index(policyIndex));
 				R.add(processedRequest);
-				trace.add(String.format("policy %d: evaluating %s", policyIndex, exchange));
+				trace.add(String.format("rule %d: evaluating %s", policyIndex, exchange));
 				result = evaluate(policyIndex, exchange, request, R);
 				R.remove(processedRequest);
 			}

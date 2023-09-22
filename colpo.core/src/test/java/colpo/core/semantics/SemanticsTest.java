@@ -435,7 +435,7 @@ public class SemanticsTest {
 			  policy 1: evaluating rules
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    policy 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
+			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
 			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
 			      policy 2: evaluating rules
 			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
