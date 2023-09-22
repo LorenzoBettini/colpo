@@ -7,6 +7,7 @@ import java.util.Set;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
+import colpo.core.Exchange;
 import colpo.core.Participant;
 import colpo.core.Participant.Quantifier;
 import colpo.core.Policies;
@@ -113,15 +114,18 @@ public class Semantics {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
-//			var exchange = rule.getExchange();
-//			if (exchange != null) {
-//				var processedRequest = new Request(
-//					request.requester(), request.resource(), Participant.index(index));
-//				R.add(processedRequest);
-//				trace.add(String.format("%d: evaluating %s", index, exchange));
-//				result = evaluate(index, exchange, request, R);
-//				R.remove(processedRequest);
-//			}
+			var exchange = rule.getExchange();
+			if (exchange != null) {
+				var processedRequest = new Request(
+					request.requester(),
+					request.resource(),
+					request.credentials(),
+					Participant.index(policyIndex));
+				R.add(processedRequest);
+				trace.add(String.format("policy %d: evaluating %s", policyIndex, exchange));
+				result = evaluate(policyIndex, exchange, request, R);
+				R.remove(processedRequest);
+			}
 			return result;
 		} catch (Exception e) {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
@@ -129,17 +133,18 @@ public class Semantics {
 		}
 	}
 
-//	private boolean evaluate(int index, Exchange exchange, Request request, Set<Request> R) {
-//		var exchangeRequest = new Request(
-//			Participant.index(index),
-//			exchange.resource(),
-//			request.requester());
-//		if (R.contains(exchangeRequest)) {
-//			trace.add(String.format("%d: satisfied %s", index, exchangeRequest));
-//			return true;
-//		}
-//		return evaluate(exchangeRequest, R);
-//	}
+	private boolean evaluate(int policyIndex, Exchange exchange, Request request, Set<Request> R) {
+		var exchangeRequest = new Request(
+			Participant.index(policyIndex),
+			exchange.resource(),
+			exchange.credentials(),
+			request.requester());
+		if (R.contains(exchangeRequest)) {
+			trace.add(String.format("%d: satisfied %s", policyIndex, exchangeRequest));
+			return true;
+		}
+		return evaluate(exchangeRequest, R);
+	}
 
 	public Trace getTrace() {
 		return trace;
