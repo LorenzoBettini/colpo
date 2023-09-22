@@ -115,16 +115,8 @@ public class Semantics {
 			if (!result)
 				return false;
 			var exchange = rule.getExchange();
-			if (exchange != null) {
-				var processedRequest = new Request(
-					request.requester(),
-					request.resource(),
-					request.credentials(),
-					Participant.index(policyIndex));
-				R.add(processedRequest);
-				trace.add(String.format("rule %d: evaluating %s", policyIndex, exchange));
-				result = evaluate(policyIndex, exchange, request, R);
-				R.remove(processedRequest);
+			if (exchange instanceof SingleExchange singleExchange) {
+				result = evaluate(policyIndex, singleExchange, request, R);
 			}
 			return result;
 		} catch (Exception e) {
@@ -134,16 +126,26 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int policyIndex, SingleExchange exchange, Request request, Set<Request> R) {
+		var processedRequest = new Request(
+			request.requester(),
+			request.resource(),
+			request.credentials(),
+			Participant.index(policyIndex));
+		R.add(processedRequest);
+		trace.add(String.format("rule %d: evaluating %s", policyIndex, exchange));
 		var exchangeRequest = new Request(
 			Participant.index(policyIndex),
 			exchange.resource(),
 			exchange.credentials(),
 			request.requester());
+		boolean result = true;
 		if (R.contains(exchangeRequest)) {
 			trace.add(String.format("%d: satisfied %s", policyIndex, exchangeRequest));
-			return true;
+		} else {
+			result = evaluate(exchangeRequest, R);
 		}
-		return evaluate(exchangeRequest, R);
+		R.remove(processedRequest);
+		return result;
 	}
 
 	public Trace getTrace() {
