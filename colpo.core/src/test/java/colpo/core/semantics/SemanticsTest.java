@@ -69,7 +69,9 @@ public class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=2]
-			  2: condition true -> true
+			  policy 2: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
 			result: true
 			"""
 		);
@@ -82,7 +84,9 @@ public class SemanticsTest {
 			),
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=3]
-			  3: condition true -> true
+			  policy 3: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
 			result: true
 			"""
 		);
@@ -127,9 +131,11 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=anySuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
-			  3: condition true -> true
+			    policy 2: from match([(name : Bob)], [(role : Provider)]) -> false
+			    policy 3: from match([(name : Bob)], [(name : Bob), (role : Provider)]) -> true
+			  policy 3: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
 			result: true
 			"""
 		);
@@ -148,10 +154,14 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
-			    2: true match([(role : Provider)], [(role : Provider)])
-			    3: true match([(role : Provider)], [(name : Bob), (role : Provider)])
-			  2: condition true -> true
-			  3: condition true -> true
+			    policy 2: from match([(role : Provider)], [(role : Provider)]) -> true
+			    policy 3: from match([(role : Provider)], [(name : Bob), (role : Provider)]) -> true
+			  policy 2: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
+			  policy 3: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
 			result: true
 			"""
 		);
@@ -169,9 +179,11 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
-			  3: condition true -> true
+			    policy 2: from match([(name : Bob)], [(role : Provider)]) -> false
+			    policy 3: from match([(name : Bob)], [(name : Bob), (role : Provider)]) -> true
+			  policy 3: evaluating rules
+			    rule 1: resource match([], []) -> true
+			    rule 1: condition true -> true
 			result: true
 			"""
 		);
@@ -189,8 +201,8 @@ public class SemanticsTest {
 			"""
 			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Carl)]]
 			  finding matching policies
-			    2: false match([(name : Carl)], [(role : Provider)])
-			    3: false match([(name : Carl)], [(name : Bob), (role : Provider)])
+			    policy 2: from match([(name : Carl)], [(role : Provider)]) -> false
+			    policy 3: from match([(name : Carl)], [(name : Bob), (role : Provider)]) -> false
 			result: false
 			"""
 		);

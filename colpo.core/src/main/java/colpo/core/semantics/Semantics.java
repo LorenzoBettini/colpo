@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import colpo.core.AttributeMatcher;
+import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
 import colpo.core.Participant;
 import colpo.core.Participant.Quantifier;
@@ -67,16 +68,25 @@ public class Semantics {
 			.filter(d -> {
 				var attributes1 = from.getAttributes();
 				var attributes2 = d.policy().party();
-				boolean matchResult = matcher.match(attributes1, attributes2);
-				trace.add(String.format("%d: %s match(%s, %s)",
-					d.index(), matchResult, attributes1, attributes2));
-				return matchResult;
+				return tryMatch("policy", d.index(), "from", attributes1, attributes2);
 			})
 			.toList();
 	}
 
+	private boolean tryMatch(String prefix, int index, String description, Attributes attributes1, Attributes attributes2) {
+		boolean matchResult = matcher.match(attributes1, attributes2);
+		trace.add(String.format("%s %d: %s match(%s, %s) -> %s",
+			prefix, index, description, attributes1, attributes2, matchResult));
+		return matchResult;
+	}
+
 	private boolean evaluate(int policyIndex, Policy policy, Request request, Set<Request> R) {
-		return evaluate(policyIndex, policy.rules(), request, R);
+		trace.add(String.format("policy %d: evaluating rules",
+				policyIndex));
+		trace.addIndent();
+		var result = evaluate(policyIndex, policy.rules(), request, R);
+		trace.removeIndent();
+		return result;
 	}
 
 	private boolean evaluate(int policyIndex, Rules rules, Request request, Set<Request> R) {
@@ -86,7 +96,9 @@ public class Semantics {
 
 	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> R) {
 		try {
-			boolean result;
+			boolean result = tryMatch("rule", ruleIndex, "resource", request.resource(), rule.getResource());
+			if (!result)
+				return false;
 			result = rule.getCondition().evaluate(new EvaluationContext() {
 				@Override
 				public Object name(String name) throws UndefinedName {
@@ -96,7 +108,7 @@ public class Semantics {
 					return value;
 				}
 			});
-			trace.add(String.format("%d: condition %s -> %s", policyIndex, rule.getCondition(), result));
+			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
 //			var exchange = rule.getExchange();
