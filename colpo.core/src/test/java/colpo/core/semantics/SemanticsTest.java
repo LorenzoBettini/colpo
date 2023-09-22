@@ -85,7 +85,7 @@ public class SemanticsTest {
 	}
 
 	@Test
-	void shouldCheckAttributesMatch() {
+	void shouldCheckAnyAndAllSuchThat() {
 		policies.add(
 			new Policy( // index 1
 				new Attributes()
@@ -111,18 +111,17 @@ public class SemanticsTest {
 		3 = Policy[party=[(name : Bob), (role : Provider)], rules=[resource=[], condition=true]]
 			""");
 		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
+		// ( resource: empty, from: anySuchThat (name : "Bob"))
 		assertResultTrue(
 			new Request(
 				index(1), // Alice
-				new Attributes()
-					.add("resource", "aResource"),
+				new Attributes(),
 				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=anySuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[], credentials=[], from=anySuchThat: [(name : Bob)]]
 			  finding matching policies
 			    2: false match([(name : Bob)], [(role : Provider)])
 			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
@@ -131,20 +130,19 @@ public class SemanticsTest {
 			"""
 		);
 		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: allSuchThat (role : "Provider"))
+		// ( resource: empty, from: allSuchThat (role : "Provider"))
 		// NOTE: Alice's policy is not evaluated since she's the requester
 		// her attributes would not match the request
 		assertResultTrue(
 			new Request(
 				index(1), // Alice
-				new Attributes()
-					.add("resource", "aResource"),
+				new Attributes(),
 				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("role", "Provider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(role : Provider)]]
+			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
 			    2: true match([(role : Provider)], [(role : Provider)])
 			    3: true match([(role : Provider)], [(name : Bob), (role : Provider)])
@@ -154,19 +152,18 @@ public class SemanticsTest {
 			"""
 		);
 		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: allSuchThat (name : "Bob"))
+		// ( resource: empty, from: allSuchThat (name : "Bob"))
 		// even if there's only one Bob
 		assertResultTrue(
 			new Request(
 				index(1), // Alice
-				new Attributes()
-					.add("resource", "aResource"),
+				new Attributes(),
 				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Bob)]]
 			  finding matching policies
 			    2: false match([(name : Bob)], [(role : Provider)])
 			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
@@ -175,19 +172,18 @@ public class SemanticsTest {
 			"""
 		);
 		// Alice requests
-		// ( resource: (resource/name : "aResource"), from: allSuchThat (name : "Carl"))
+		// ( resource: empty, from: allSuchThat (name : "Carl"))
 		// and there's no Carl
 		assertResultFalse(
 			new Request(
 				index(1), // Alice
-				new Attributes()
-					.add("resource", "aResource"),
+				new Attributes(),
 				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Carl"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Carl)]]
+			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Carl)]]
 			  finding matching policies
 			    2: false match([(name : Carl)], [(role : Provider)])
 			    3: false match([(name : Carl)], [(name : Bob), (role : Provider)])

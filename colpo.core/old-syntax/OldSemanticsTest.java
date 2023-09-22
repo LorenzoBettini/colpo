@@ -101,6 +101,8 @@ class SemanticsTest {
 		);
 	}
 
+	// TODO: change it: this does not check attributes
+	// it only checks whether parties match
 	@Test
 	void shouldCheckAttributesMatch() {
 		policies.add(
@@ -108,26 +110,24 @@ class SemanticsTest {
 				new Attributes()
 					.add("name", "Alice"),
 				new Rules()
-					.add(new Rule(FALSE))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 2
 				new Attributes()
-					.add("role", "Provider")
-					.add("resource/name", "aResource"),
+					.add("role", "Provider"),
 				new Rules()
-					.add(new Rule(TRUE))))
+					.add(new Rule())))
 		.add(
 			new Policy( // index 3
 				new Attributes()
 					.add("name", "Bob")
-					.add("role", "Provider")
-					.add("resource/name", "aResource"),
+					.add("role", "Provider"),
 				new Rules()
-					.add(new Rule(TRUE))));
+					.add(new Rule())));
 		assertPolicies("""
-			1 = Policy[party=[(name : Alice)], rules=[resource=false]]
-			2 = Policy[party=[(role : Provider), (resource/name : aResource)], rules=[resource=true]]
-			3 = Policy[party=[(name : Bob), (role : Provider), (resource/name : aResource)], rules=[resource=true]]
+		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
+		2 = Policy[party=[(role : Provider)], rules=[resource=[], condition=true]]
+		3 = Policy[party=[(name : Bob), (role : Provider)], rules=[resource=[], condition=true]]
 			""");
 		// Alice requests
 		// ( resource: (resource/name : "aResource"), from: anySuchThat (name : "Bob"))
@@ -136,15 +136,16 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
+				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=anySuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=anySuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  3: expression true -> true
+			    2: false match([(name : Bob)], [(role : Provider)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
+			  3: condition true -> true
 			result: true
 			"""
 		);
@@ -157,16 +158,17 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
+				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("role", "Provider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(role : Provider)]]
+			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
-			    2: true match([(role : Provider)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(role : Provider)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  2: expression true -> true
-			  3: expression true -> true
+			    2: true match([(role : Provider)], [(role : Provider)])
+			    3: true match([(role : Provider)], [(name : Bob), (role : Provider)])
+			  2: condition true -> true
+			  3: condition true -> true
 			result: true
 			"""
 		);
@@ -178,15 +180,16 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
+				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Bob)]]
 			  finding matching policies
-			    2: false match([(name : Bob)], [(role : Provider), (resource/name : aResource)])
-			    3: true match([(name : Bob)], [(name : Bob), (role : Provider), (resource/name : aResource)])
-			  3: expression true -> true
+			    2: false match([(name : Bob)], [(role : Provider)])
+			    3: true match([(name : Bob)], [(name : Bob), (role : Provider)])
+			  3: condition true -> true
 			result: true
 			"""
 		);
@@ -198,14 +201,15 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource", "aResource"),
+				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Carl"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource : aResource)], from=allSuchThat: [(name : Carl)]]
+			evaluating Request[requester=1, resource=[(resource : aResource)], credentials=[], from=allSuchThat: [(name : Carl)]]
 			  finding matching policies
-			    2: false match([(name : Carl)], [(role : Provider), (resource/name : aResource)])
-			    3: false match([(name : Carl)], [(name : Bob), (role : Provider), (resource/name : aResource)])
+			    2: false match([(name : Carl)], [(role : Provider)])
+			    3: false match([(name : Carl)], [(name : Bob), (role : Provider)])
 			result: false
 			"""
 		);
