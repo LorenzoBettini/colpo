@@ -30,7 +30,7 @@ public class SemanticsTest {
 	}
 
 	@Test
-	void shouldCheckRequestFrom() {
+	void shouldCheckRequestFromWithIndexes() {
 		policies.add(
 			new Policy( // index 1
 				new Attributes()
