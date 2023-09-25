@@ -7,6 +7,8 @@ import java.util.Set;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
+import colpo.core.Exchange;
+import colpo.core.OrExchange;
 import colpo.core.SingleExchange;
 import colpo.core.Participant;
 import colpo.core.Participant.Quantifier;
@@ -114,15 +116,23 @@ public class Semantics {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
-			var exchange = rule.getExchange();
-			if (exchange instanceof SingleExchange singleExchange) {
-				result = evaluate(policyIndex, singleExchange, request, R);
-			}
+			result = evaluateExchange(policyIndex, rule.getExchange(), request, R);
 			return result;
 		} catch (Exception e) {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
 			return false;
 		}
+	}
+
+	private boolean evaluateExchange(int policyIndex, Exchange exchange, Request request, Set<Request> R) {
+		if (exchange == null)
+			return true;
+		if (exchange instanceof SingleExchange singleExchange)
+			return evaluate(policyIndex, singleExchange, request, R);
+		else if (exchange instanceof OrExchange orExchange)
+			return evaluateExchange(policyIndex, orExchange.left(), request, R)
+				|| evaluateExchange(policyIndex, orExchange.right(), request, R);
+		return false;
 	}
 
 	private boolean evaluate(int policyIndex, SingleExchange exchange, Request request, Set<Request> R) {
