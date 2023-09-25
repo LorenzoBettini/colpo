@@ -153,7 +153,7 @@ public class Semantics {
 			request.requester());
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
-			trace.add(String.format("%d: satisfied %s", policyIndex, exchangeRequest));
+			trace.add(String.format("rule %d: satisfied %s", policyIndex, exchangeRequest));
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}
