@@ -562,6 +562,42 @@ public class SemanticsTest {
 			result: true
 			"""
 		);
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("resource/type", "paper"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PaperProvider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]
+			  finding matching policies
+			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
+			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
+			  policy 2: evaluating rules
+			    rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			    rule 1: condition true -> true
+			    rule 2: evaluating Exchange[from=REQUESTER, resource=[(resource/type : ink)], credentials=[], to=ME]
+			    evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			      policy 1: evaluating rules
+			        rule 1: resource match([(resource/type : ink)], [(resource/type : printer)]) -> false
+			    result: false
+			  policy 3: evaluating rules
+			    rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			    rule 1: condition true -> true
+			    rule 3: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], credentials=[], to=ME]
+			    evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			      policy 1: evaluating rules
+			        rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			        rule 1: condition true -> true
+			        rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
+			        rule 1: satisfied Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    result: true
+			result: true
+			"""
+		);
 	}
 
 	@Test
