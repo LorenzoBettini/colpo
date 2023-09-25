@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.EvaluationContext;
@@ -125,14 +126,16 @@ public class Semantics {
 	}
 
 	private boolean evaluateExchange(int policyIndex, Exchange exchange, Request request, Set<Request> R) {
-		if (exchange == null)
-			return true;
-		if (exchange instanceof SingleExchange singleExchange)
-			return evaluate(policyIndex, singleExchange, request, R);
-		else if (exchange instanceof OrExchange orExchange)
+		if (exchange instanceof OrExchange orExchange)
 			return evaluateExchange(policyIndex, orExchange.left(), request, R)
 				|| evaluateExchange(policyIndex, orExchange.right(), request, R);
-		return false;
+		else if (exchange instanceof AndExchange orExchange)
+			return evaluateExchange(policyIndex, orExchange.left(), request, R)
+				&& evaluateExchange(policyIndex, orExchange.right(), request, R);
+		else if (exchange instanceof SingleExchange singleExchange)
+			return evaluate(policyIndex, singleExchange, request, R);
+		else // exchange is null
+			return true;
 	}
 
 	private boolean evaluate(int policyIndex, SingleExchange exchange, Request request, Set<Request> R) {
