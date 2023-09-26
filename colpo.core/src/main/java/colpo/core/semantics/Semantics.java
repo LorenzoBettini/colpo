@@ -1,5 +1,7 @@
 package colpo.core.semantics;
 
+import static colpo.core.Participant.index;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -55,10 +57,10 @@ public class Semantics {
 				result = false;
 			else if (from.getQuantifier() == Quantifier.ANY) {
 				result = policiesToEvaluate.stream()
-						.anyMatch(d -> evaluate(d.index(), d.policy(), request, R));
+					.anyMatch(d -> evaluate(d.index(), d.policy(), request, R));
 			} else
 				result = policiesToEvaluate.stream()
-				.allMatch(d -> evaluate(d.index(), d.policy(), request, R));
+					.allMatch(d -> evaluate(d.index(), d.policy(), request, R));
 		}
 		trace.removeIndent();
 		trace.add(String.format("result: %s", result));
@@ -126,38 +128,75 @@ public class Semantics {
 	}
 
 	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> R) {
-		if (exchange instanceof OrExchange orExchange)
-			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof AndExchange orExchange)
-			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof SingleExchange singleExchange)
-			return evaluate(policyIndex, ruleIndex, singleExchange, request, R);
-		else // exchange is null
-			return true;
-	}
+		boolean result = true;
 
-	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		var processedRequest = new Request(
 			request.requester(),
 			request.resource(),
 			request.credentials(),
 			Participant.index(policyIndex));
 		R.add(processedRequest);
+
+		if (exchange instanceof OrExchange orExchange)
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+		else if (exchange instanceof AndExchange orExchange)
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+		else if (exchange instanceof SingleExchange singleExchange)
+			result = evaluate(policyIndex, ruleIndex, singleExchange, request, R);
+		else // exchange is null
+			result = true;
+
+		R.remove(processedRequest);
+
+		return result;
+	}
+
+	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
+
+		Participant exchangeRequestRequester = index(policyIndex);
+		Participant exchangeRequestFrom = request.requester();
+
+		// TODO: to is assumed to be ME
+		var exchangeFrom = exchange.from();
+		if (!exchangeFrom.isRequester()) {
+			var fromSet = policies.getPolicyData()
+				.filter(d -> d.index() != policyIndex)
+				.filter(d -> {
+					var attributes1 = exchangeFrom.getAttributes();
+					var attributes2 = d.policy().party();
+					return tryMatch("policy", d.index(), "from", attributes1, attributes2);
+				})
+				.toList();
+			if (exchangeFrom.getQuantifier() == Quantifier.ALL)
+				return fromSet.stream()
+					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+						exchangeRequestRequester,
+						index(d.index()), R));
+			return fromSet.stream()
+					.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+							exchangeRequestRequester,
+							index(d.index()), R));
+		}
+
+		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
+	}
+
+	private boolean evaluateExchangeRequest(int ruleIndex, SingleExchange exchange,
+			Participant exchangeRequestRequester, Participant exchangeRequestFrom, Set<Request> R) {
 		var exchangeRequest = new Request(
-			Participant.index(policyIndex),
+			exchangeRequestRequester,
 			exchange.resource(),
 			exchange.credentials(),
-			request.requester());
+			exchangeRequestFrom);
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
 			trace.add(String.format("rule %d: satisfied %s", ruleIndex, exchangeRequest));
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}
-		R.remove(processedRequest);
 		return result;
 	}
 
