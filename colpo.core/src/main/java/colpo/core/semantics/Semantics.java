@@ -1,5 +1,7 @@
 package colpo.core.semantics;
 
+import static colpo.core.Participant.index;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -55,10 +57,10 @@ public class Semantics {
 				result = false;
 			else if (from.getQuantifier() == Quantifier.ANY) {
 				result = policiesToEvaluate.stream()
-						.anyMatch(d -> evaluate(d.index(), d.policy(), request, R));
+					.anyMatch(d -> evaluate(d.index(), d.policy(), request, R));
 			} else
 				result = policiesToEvaluate.stream()
-				.allMatch(d -> evaluate(d.index(), d.policy(), request, R));
+					.allMatch(d -> evaluate(d.index(), d.policy(), request, R));
 		}
 		trace.removeIndent();
 		trace.add(String.format("result: %s", result));
@@ -153,8 +155,28 @@ public class Semantics {
 
 	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
-		Participant exchangeRequestRequester = Participant.index(policyIndex);
+
+		Participant exchangeRequestRequester = index(policyIndex);
 		Participant exchangeRequestFrom = request.requester();
+
+		// TODO: to is assumed to be ME
+		var exchangeFrom = exchange.from();
+		if (!exchangeFrom.isRequester()) {
+			var fromSet = policies.getPolicyData()
+				.filter(d -> d.index() != policyIndex)
+				.filter(d -> {
+					var attributes1 = exchangeFrom.getAttributes();
+					var attributes2 = d.policy().party();
+					return tryMatch("policy", d.index(), "from", attributes1, attributes2);
+				})
+				.toList();
+			// TODO: qualifier is assumed to be ANY
+			return fromSet.stream()
+				.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+						exchangeRequestRequester,
+						index(d.index()), R));
+		}
+
 		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
 	}
 
