@@ -117,7 +117,7 @@ public class Semantics {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
 			if (!result)
 				return false;
-			result = evaluateExchange(policyIndex, rule.getExchange(), request, R);
+			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, R);
 			return result;
 		} catch (Exception e) {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
@@ -125,27 +125,27 @@ public class Semantics {
 		}
 	}
 
-	private boolean evaluateExchange(int policyIndex, Exchange exchange, Request request, Set<Request> R) {
+	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> R) {
 		if (exchange instanceof OrExchange orExchange)
-			return evaluateExchange(policyIndex, orExchange.left(), request, R)
-				|| evaluateExchange(policyIndex, orExchange.right(), request, R);
+			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 		else if (exchange instanceof AndExchange orExchange)
-			return evaluateExchange(policyIndex, orExchange.left(), request, R)
-				&& evaluateExchange(policyIndex, orExchange.right(), request, R);
+			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 		else if (exchange instanceof SingleExchange singleExchange)
-			return evaluate(policyIndex, singleExchange, request, R);
+			return evaluate(policyIndex, ruleIndex, singleExchange, request, R);
 		else // exchange is null
 			return true;
 	}
 
-	private boolean evaluate(int policyIndex, SingleExchange exchange, Request request, Set<Request> R) {
+	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		var processedRequest = new Request(
 			request.requester(),
 			request.resource(),
 			request.credentials(),
 			Participant.index(policyIndex));
 		R.add(processedRequest);
-		trace.add(String.format("rule %d: evaluating %s", policyIndex, exchange));
+		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
 		var exchangeRequest = new Request(
 			Participant.index(policyIndex),
 			exchange.resource(),
@@ -153,7 +153,7 @@ public class Semantics {
 			request.requester());
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
-			trace.add(String.format("rule %d: satisfied %s", policyIndex, exchangeRequest));
+			trace.add(String.format("rule %d: satisfied %s", ruleIndex, exchangeRequest));
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}
