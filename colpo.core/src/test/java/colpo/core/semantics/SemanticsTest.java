@@ -24,7 +24,7 @@ import colpo.core.Request;
 import colpo.core.Rule;
 import colpo.core.Rules;
 
-public class SemanticsTest {
+class SemanticsTest {
 
 	private Semantics semantics;
 	private Policies policies;

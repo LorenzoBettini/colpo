@@ -23,7 +23,7 @@ import colpo.core.Rules;
 import colpo.core.SingleExchange;
 import colpo.core.semantics.Semantics;
 
-public class CouriersExampleTest {
+class CouriersExampleTest {
 
 	private Semantics semantics;
 	private Policies policies;
