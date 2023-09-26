@@ -170,11 +170,15 @@ public class Semantics {
 					return tryMatch("policy", d.index(), "from", attributes1, attributes2);
 				})
 				.toList();
-			// TODO: qualifier is assumed to be ANY
-			return fromSet.stream()
-				.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+			if (exchangeFrom.getQuantifier() == Quantifier.ALL)
+				return fromSet.stream()
+					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
 						exchangeRequestRequester,
 						index(d.index()), R));
+			return fromSet.stream()
+					.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+							exchangeRequestRequester,
+							index(d.index()), R));
 		}
 
 		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);

@@ -1015,6 +1015,107 @@ public class SemanticsTest {
 		);
 	}
 
+	@Test
+	void exchangeFromAllSuchThat() {
+		// Alice gives printer provided any paper provider gives paper
+		// Bob gives paper
+		// Carl gives paper
+		// Ed gives paper
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+							allSuchThat(new Attributes()
+									.add("role", "PaperProvider")),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							me())
+						))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))))
+		.add(
+			new Policy( // index 4
+				new Attributes()
+					.add("name", "Ed")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))));
+		assertPolicies("""
+		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[from=allSuchThat: [(role : PaperProvider)], resource=[(resource/type : paper)], credentials=[], to=ME]]]
+		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
+		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
+		4 = Policy[party=[(name : Ed), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
+			""");
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
+			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
+			  policy 1: evaluating rules
+			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1: condition true -> true
+			    rule 1: evaluating Exchange[from=allSuchThat: [(role : PaperProvider)], resource=[(resource/type : paper)], credentials=[], to=ME]
+			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
+			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
+			    policy 4: from match([(role : PaperProvider)], [(name : Ed), (role : PaperProvider)]) -> true
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			      policy 2: evaluating rules
+			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 1: condition true -> true
+			    result: true
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			      policy 3: evaluating rules
+			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 1: condition true -> true
+			    result: true
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
+			      policy 4: evaluating rules
+			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 1: condition true -> true
+			    result: true
+			result: true
+			"""
+		);
+	}
+
 	private void assertPolicies(String expected) {
 		assertEquals(expected, policies.description());
 	}
