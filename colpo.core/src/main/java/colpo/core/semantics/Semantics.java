@@ -126,25 +126,32 @@ public class Semantics {
 	}
 
 	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> R) {
-		if (exchange instanceof OrExchange orExchange)
-			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof AndExchange orExchange)
-			return evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof SingleExchange singleExchange)
-			return evaluate(policyIndex, ruleIndex, singleExchange, request, R);
-		else // exchange is null
-			return true;
-	}
+		boolean result = true;
 
-	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		var processedRequest = new Request(
 			request.requester(),
 			request.resource(),
 			request.credentials(),
 			Participant.index(policyIndex));
 		R.add(processedRequest);
+
+		if (exchange instanceof OrExchange orExchange)
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+		else if (exchange instanceof AndExchange orExchange)
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
+				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+		else if (exchange instanceof SingleExchange singleExchange)
+			result = evaluate(policyIndex, ruleIndex, singleExchange, request, R);
+		else // exchange is null
+			result = true;
+
+		R.remove(processedRequest);
+
+		return result;
+	}
+
+	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
 		var exchangeRequest = new Request(
 			Participant.index(policyIndex),
@@ -157,7 +164,6 @@ public class Semantics {
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}
-		R.remove(processedRequest);
 		return result;
 	}
 
