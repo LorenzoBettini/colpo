@@ -153,11 +153,18 @@ public class Semantics {
 
 	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
+		Participant exchangeRequestRequester = Participant.index(policyIndex);
+		Participant exchangeRequestFrom = request.requester();
+		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
+	}
+
+	private boolean evaluateExchangeRequest(int ruleIndex, SingleExchange exchange,
+			Participant exchangeRequestRequester, Participant exchangeRequestFrom, Set<Request> R) {
 		var exchangeRequest = new Request(
-			Participant.index(policyIndex),
+			exchangeRequestRequester,
 			exchange.resource(),
 			exchange.credentials(),
-			request.requester());
+			exchangeRequestFrom);
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
 			trace.add(String.format("rule %d: satisfied %s", ruleIndex, exchangeRequest));
