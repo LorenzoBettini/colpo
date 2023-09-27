@@ -160,7 +160,6 @@ public class Semantics {
 		Participant exchangeRequestRequester = index(policyIndex);
 		Participant exchangeRequestFrom = request.requester();
 
-		// TODO: to is assumed to be ME
 		var exchangeFrom = exchange.from();
 		if (!exchangeFrom.isRequester()) {
 			var fromSet = computeIndexSet(policyIndex, exchangeFrom.getAttributes());
@@ -175,12 +174,29 @@ public class Semantics {
 							index(d.index()), R));
 		}
 
+		var exchangeTo = exchange.to();
+		if (!exchangeTo.isMe()) {
+			var toSet = computeIndexSet(exchangeRequestFrom.getIndex(), exchangeTo.getAttributes());
+			if (exchangeTo.getQuantifier() == Quantifier.ALL)
+				return toSet.stream()
+					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+						index(d.index()),
+						exchangeRequestFrom, R));
+			return toSet.stream()
+					.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
+							index(d.index()),
+							exchangeRequestFrom, R));
+			
+		}
+
+		// TODO: consider form and to to be any/allSuchThat
+
 		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
 	}
 
-	private List<PolicyData> computeIndexSet(int policyIndex, Attributes attributesToMatch) {
+	private List<PolicyData> computeIndexSet(int indexToSkip, Attributes attributesToMatch) {
 		return policies.getPolicyData()
-			.filter(d -> d.index() != policyIndex)
+			.filter(d -> d.index() != indexToSkip)
 			.filter(d -> {
 				var attributes1 = attributesToMatch;
 				var attributes2 = d.policy().party();
