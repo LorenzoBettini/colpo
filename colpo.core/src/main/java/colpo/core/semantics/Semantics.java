@@ -161,6 +161,21 @@ public class Semantics {
 		Participant exchangeRequestFrom = request.requester();
 
 		var exchangeFrom = exchange.from();
+		var exchangeTo = exchange.to();
+
+		if (!exchangeFrom.isRequester() && !exchangeTo.isMe()) {
+			// TODO: assumed to be both allSuchThat
+			var fromSet = computeIndexSet(-1, exchangeFrom.getAttributes());
+			var toSet = computeIndexSet(-1, exchangeTo.getAttributes());
+
+			return fromSet.stream()
+				.allMatch(d1 -> 
+					toSet.stream().allMatch(d2 ->
+					evaluateExchangeRequest(ruleIndex, exchange,
+						index(d2.index()),
+						index(d1.index()), R)));
+		}
+
 		if (!exchangeFrom.isRequester()) {
 			var fromSet = computeIndexSet(policyIndex, exchangeFrom.getAttributes());
 			if (exchangeFrom.getQuantifier() == Quantifier.ALL)
@@ -174,7 +189,6 @@ public class Semantics {
 							index(d.index()), R));
 		}
 
-		var exchangeTo = exchange.to();
 		if (!exchangeTo.isMe()) {
 			var toSet = computeIndexSet(exchangeRequestFrom.getIndex(), exchangeTo.getAttributes());
 
