@@ -209,8 +209,6 @@ public class Semantics {
 			
 		}
 
-		// TODO: consider from and to to be any/allSuchThat
-
 		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
 	}
 
