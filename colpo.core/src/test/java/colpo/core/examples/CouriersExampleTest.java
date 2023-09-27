@@ -346,6 +346,157 @@ class CouriersExampleTest {
 		);
 	}
 
+	@Test
+	void fourthScenario() {
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "RabbitService"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Lucca"),
+						new ExpressionWithDescription(
+							c -> c.name("affiliation").equals("RabbitService"),
+							"affiliation = RabbitService")))
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Lucca"),
+						new ExpressionWithDescription(
+							c -> !c.name("affiliation").equals("RabbitService"),
+							"affiliation != RabbitService"),
+						new SingleExchange(
+							requester(),
+							new Attributes()
+								.add("type", "addrInfo")
+								.add("city", "Prato"),
+							new Attributes()
+								.add("affiliation", "RabbitService"),
+							me())))
+					))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "FastAndFurious"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Prato"),
+						new AndExchange(
+							new SingleExchange(
+								anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")),
+								new Attributes()
+									.add("type", "addrInfo")
+									.add("city", "Lucca"),
+								new Attributes()
+									.add("affiliation", "FastAndFurious"),
+								me()),
+							new SingleExchange(
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")),
+								new Attributes()
+									.add("type", "addrInfo")
+									.add("city", "Grosseto"),
+								new Attributes()
+									.add("affiliation", "FastAndFurious"),
+								me())
+						)))
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Firenze"),
+							new SingleExchange(
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")),
+								new Attributes()
+									.add("type", "addrInfo")
+									.add("city", "Pisa"),
+								new Attributes()
+									.add("affiliation", "FastAndFurious"),
+								me())
+						))
+				))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "RabbitService"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Grosseto")
+					))
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Pisa"),
+						new SingleExchange(
+							requester(),
+							new Attributes()
+								.add("type", "addrInfo")
+								.add("city", "Firenze"),
+							new Attributes()
+								.add("affiliation", "RabbitService"),
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")))
+					))
+				));
+		// don't assert policies for simplicity and readability
+		assertResultTrue(
+			new Request(
+				index(1), // RabbitService
+				new Attributes()
+					.add("type", "addrInfo")
+					.add("city", "Firenze"),
+				new Attributes()
+					.add("affiliation", "RabbitService"),
+				anySuchThat(new Attributes()
+					.add("service", "delivery")
+					.add("company", "FastAndFurious"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=anySuchThat: [(service : delivery), (company : FastAndFurious)]]
+			  finding matching policies
+			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
+			    policy 3: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : RabbitService)]) -> false
+			  policy 2: evaluating rules
+			    rule 1: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Prato)]) -> false
+			    rule 2: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Firenze)]) -> true
+			    rule 2: condition true -> true
+			    rule 2: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=1]
+			      policy 1: evaluating rules
+			        rule 1: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Lucca)]) -> false
+			        rule 2: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Lucca)]) -> false
+			    result: false
+			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=3]
+			      policy 3: evaluating rules
+			        rule 1: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Grosseto)]) -> false
+			        rule 2: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Pisa)]) -> true
+			        rule 2: condition true -> true
+			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], to=anySuchThat: [(service : delivery), (company : RabbitService)]]
+			        policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			        policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			        rule 2: satisfied Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
+			    result: true
+			result: true
+			"""
+		);
+	}
+
 	private void assertPolicies(String expected) {
 		assertEquals(expected, policies.description());
 	}
