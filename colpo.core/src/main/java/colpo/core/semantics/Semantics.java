@@ -177,6 +177,12 @@ public class Semantics {
 		var exchangeTo = exchange.to();
 		if (!exchangeTo.isMe()) {
 			var toSet = computeIndexSet(exchangeRequestFrom.getIndex(), exchangeTo.getAttributes());
+
+			if (toSet.isEmpty()) {
+				trace.add(String.format("rule %d: satisfied: no one to exchange", ruleIndex));
+				return true; // there's no one to satisfy
+			}
+
 			if (exchangeTo.getQuantifier() == Quantifier.ALL)
 				return toSet.stream()
 					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
