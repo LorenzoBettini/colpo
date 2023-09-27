@@ -189,7 +189,7 @@ public class Semantics {
 			
 		}
 
-		// TODO: consider form and to to be any/allSuchThat
+		// TODO: consider from and to to be any/allSuchThat
 
 		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
 	}

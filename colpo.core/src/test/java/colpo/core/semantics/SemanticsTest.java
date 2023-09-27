@@ -1208,6 +1208,93 @@ class SemanticsTest {
 		);
 	}
 
+	@Test
+	void exchangeToAnySuchThat() {
+		// Alice gives printer provided the requester gives paper to any printer providers
+		// Bob gives paper but not to Alice
+		// Carl gives paper
+		// Ed is a printer provider
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+							requester(),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							anySuchThat(new Attributes()
+									.add("role", "PrinterProvider")))
+						))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))))
+		.add(
+			new Policy( // index 4
+				new Attributes()
+					.add("name", "Ed")
+					.add("role", "PrinterProvider"),
+				new Rules()));
+		assertPolicies("""
+		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=anySuchThat: [(role : PrinterProvider)]]]]
+		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
+		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
+		4 = Policy[party=[(name : Ed), (role : PrinterProvider)], rules=[]]
+		""");
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
+			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
+			  policy 1: evaluating rules
+			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1: condition true -> true
+			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=anySuchThat: [(role : PrinterProvider)]]
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
+			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			      policy 2: evaluating rules
+			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 1: condition true -> true
+			    result: true
+			result: true
+			"""
+		);
+	}
+
 	private void assertPolicies(String expected) {
 		assertEquals(expected, policies.description());
 	}
