@@ -125,14 +125,14 @@ class CouriersExampleTest {
 							.add("type", "addrInfo")
 							.add("city", "Lucca"),
 						new ExpressionWithDescription(
-							c -> c.name("affiliation").equals("RabbitService"),
+							attributes -> attributes.name("affiliation").equals("RabbitService"),
 							"affiliation = RabbitService")))
 					.add(new Rule(
 						new Attributes()
 							.add("type", "addrInfo")
 							.add("city", "Lucca"),
 						new ExpressionWithDescription(
-							c -> !c.name("affiliation").equals("RabbitService"),
+							attributes -> !attributes.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
 							requester(),
