@@ -54,14 +54,20 @@ public class Semantics {
 			trace.addIndent();
 			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
 			trace.removeIndent();
-			if (policiesToEvaluate.isEmpty())
+			if (policiesToEvaluate.isEmpty()) {
 				result = false;
-			else if (from.getQuantifier() == Quantifier.ANY) {
-				result = policiesToEvaluate.stream()
-					.anyMatch(d -> evaluate(d.index(), d.policy(), request, R));
-			} else
-				result = policiesToEvaluate.stream()
-					.allMatch(d -> evaluate(d.index(), d.policy(), request, R));
+			} else {
+				if (from.getQuantifier() == Quantifier.ANY) {
+					result = policiesToEvaluate.stream()
+						.anyMatch(d -> 
+							evaluate(d.index(), d.policy(),
+								request.withFrom(d.index()), R));
+				} else {
+					result = policiesToEvaluate.stream()
+						.allMatch(d ->evaluate(d.index(), d.policy(),
+								request.withFrom(d.index()), R));
+				}
+			}
 		}
 		trace.removeIndent();
 		trace.add(String.format("result: %s", result));
@@ -88,12 +94,7 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int policyIndex, Policy policy, Request request, Set<Request> R) {
-		trace.add(String.format("policy %d: evaluating rules",
-				policyIndex));
-		trace.addIndent();
-		var result = evaluate(policyIndex, policy.rules(), request, R);
-		trace.removeIndent();
-		return result;
+		return evaluate(policyIndex, policy.rules(), request, R);
 	}
 
 	private boolean evaluate(int policyIndex, Rules rules, Request request, Set<Request> R) {
@@ -102,6 +103,9 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> R) {
+		trace.add(String.format("policy %d: evaluating %s",
+				policyIndex, request));
+		trace.addIndent();
 		try {
 			boolean result = tryMatch("rule", ruleIndex, "resource", request.resource(), rule.getResource());
 			if (!result)
@@ -125,18 +129,14 @@ public class Semantics {
 		} catch (Exception e) {
 			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
 			return false;
+		} finally {
+			trace.removeIndent();
 		}
 	}
 
 	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> R) {
 		boolean result = true;
-
-		var processedRequest = new Request(
-			request.requester(),
-			request.resource(),
-			request.credentials(),
-			Participant.index(policyIndex));
-		R.add(processedRequest);
+		R.add(request);
 
 		if (exchange instanceof OrExchange orExchange)
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
@@ -149,7 +149,7 @@ public class Semantics {
 		else // exchange is null
 			result = true;
 
-		R.remove(processedRequest);
+		R.remove(request);
 
 		return result;
 	}

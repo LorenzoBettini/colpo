@@ -93,17 +93,17 @@ class CouriersExampleTest {
 			evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[], from=anySuchThat: [(service : delivery), (company : FastAndFurious)]]
 			  finding matching policies
 			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
-			  policy 2: evaluating rules
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[], from=2]
 			    rule 1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 1: condition true -> true
 			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME]
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
 			    result: false
 			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME]
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 1: condition true -> true
 			    result: true
@@ -192,20 +192,22 @@ class CouriersExampleTest {
 			evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=anySuchThat: [(service : delivery), (company : FastAndFurious)]]
 			  finding matching policies
 			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
-			  policy 2: evaluating rules
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 1: condition true -> true
 			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 2: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
 			    result: false
 			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 1: condition affiliation = RabbitService -> false
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 2: condition affiliation != RabbitService -> true
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
@@ -313,16 +315,17 @@ class CouriersExampleTest {
 			  finding matching policies
 			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
 			    policy 3: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : RabbitService)]) -> false
-			  policy 2: evaluating rules
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 1: condition true -> true
 			    rule 1: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 1: condition affiliation = RabbitService -> false
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 2: condition affiliation != RabbitService -> true
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
@@ -332,12 +335,13 @@ class CouriersExampleTest {
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Lucca)]) -> false
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 2: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Lucca)]) -> false
 			    result: false
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=3]
-			      policy 3: evaluating rules
+			      policy 3: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=3]
 			        rule 1: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Grosseto)]) -> true
 			        rule 1: condition true -> true
 			    result: true
@@ -470,21 +474,24 @@ class CouriersExampleTest {
 			  finding matching policies
 			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
 			    policy 3: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : RabbitService)]) -> false
-			  policy 2: evaluating rules
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 1: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Prato)]) -> false
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 2: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Firenze)]) -> true
 			    rule 2: condition true -> true
 			    rule 2: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=1]
-			      policy 1: evaluating rules
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 1: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Lucca)]) -> false
+			      policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        rule 2: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Lucca)]) -> false
 			    result: false
 			    evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=3]
-			      policy 3: evaluating rules
+			      policy 3: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=3]
 			        rule 1: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Grosseto)]) -> false
+			      policy 3: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=3]
 			        rule 2: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Pisa)]) -> true
 			        rule 2: condition true -> true
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], to=anySuchThat: [(service : delivery), (company : RabbitService)]]
