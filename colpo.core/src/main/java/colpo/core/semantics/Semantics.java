@@ -43,16 +43,14 @@ public class Semantics {
 	}
 
 	private boolean evaluate(Request request, Set<Request> R) {
-		trace.add(String.format("evaluating %s", request));
-		trace.addIndent();
+		trace.addAndThenIndent(String.format("evaluating %s", request));
 		var from = request.from();
 		var index = from.getIndex();
 		boolean result = false;
 		if (index > 0)
 			result = evaluate(index, policies.getByIndex(index), request, R);
 		else {
-			trace.add("finding matching policies");
-			trace.addIndent();
+			trace.addAndThenIndent("finding matching policies");
 			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
 			trace.removeIndent();
 			if (policiesToEvaluate.isEmpty()) {
@@ -70,8 +68,7 @@ public class Semantics {
 				}
 			}
 		}
-		trace.removeIndent();
-		trace.add(String.format("result: %s", result));
+		trace.removeIndentAndThenAdd(String.format("result: %s", result));
 		return result;
 	}
 
@@ -104,9 +101,8 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> R) {
-		trace.add(String.format("policy %d: evaluating %s",
+		trace.addAndThenIndent(String.format("policy %d: evaluating %s",
 				policyIndex, request));
-		trace.addIndent();
 		try {
 			boolean result = tryMatch("rule", ruleIndex, "resource", request.resource(), rule.getResource());
 			if (!result)
@@ -142,24 +138,19 @@ public class Semantics {
 		var isComposite = exchange instanceof CompositeExchange;
 
 		if (isComposite) {
-			trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
-			trace.addIndent();
+			trace.addAndThenIndent(String.format("rule %d: evaluating %s", ruleIndex, exchange));
 		}
 
 		if (exchange instanceof OrExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
 			if (!result) {
-				trace.removeIndent();
-				trace.add(String.format("rule %d: OR", ruleIndex));
-				trace.addIndent();
+				trace.addInPreviousIndent(String.format("rule %d: OR", ruleIndex));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 			}
 		} else if (exchange instanceof AndExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
 			if (result) {
-				trace.removeIndent();
-				trace.add(String.format("rule %d: AND", ruleIndex));
-				trace.addIndent();
+				trace.addInPreviousIndent(String.format("rule %d: AND", ruleIndex));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 			}
 		} else if (exchange instanceof SingleExchange singleExchange)
@@ -168,8 +159,7 @@ public class Semantics {
 			result = true;
 
 		if (isComposite) {
-			trace.removeIndent();
-			trace.add(String.format("rule %d: END Exchange -> %s", ruleIndex, result));
+			trace.removeIndentAndThenAdd(String.format("rule %d: END Exchange -> %s", ruleIndex, result));
 		}
 
 		R.remove(request);
