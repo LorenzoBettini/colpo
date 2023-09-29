@@ -41,4 +41,9 @@ public class Trace {
 		add(string);
 		addIndent();
 	}
+
+	public void removeIndentAndThenAdd(String string) {
+		removeIndent();
+		add(string);
+	}
 }

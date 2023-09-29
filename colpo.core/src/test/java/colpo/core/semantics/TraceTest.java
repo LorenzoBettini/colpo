@@ -73,6 +73,20 @@ class TraceTest {
 	}
 
 	@Test
+	void testTraceRemoveIndentAndThenAdd() {
+		trace.addAndThenIndent("first line");
+		trace.add("second line");
+		trace.removeIndentAndThenAdd("third line");
+		trace.add("fourth line");
+		assertEquals("""
+				first line
+				  second line
+				third line
+				fourth line
+				""", trace.toString());
+	}
+
+	@Test
 	void testTraceReset() {
 		trace.add("first line");
 		trace.addIndent();
