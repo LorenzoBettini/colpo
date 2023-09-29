@@ -677,12 +677,14 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
-			        rule 1: resource match([(paper/color : white)], [(paper/color : white)]) -> true
-			        rule 1: condition true -> true
-			    result: true
+			    rule 1: evaluating OR(Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
+			          rule 1: resource match([(paper/color : white)], [(paper/color : white)]) -> true
+			          rule 1: condition true -> true
+			      result: true
+			    rule 1: END Exchange -> true
 			result: true
 			"""
 		);
@@ -704,17 +706,20 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
-			        rule 1: resource match([(paper/color : white)], [(paper/color : yellow)]) -> false
-			    result: false
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
-			        rule 1: resource match([(paper/color : yellow)], [(paper/color : yellow)]) -> true
-			        rule 1: condition true -> true
-			    result: true
+			    rule 1: evaluating OR(Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
+			          rule 1: resource match([(paper/color : white)], [(paper/color : yellow)]) -> false
+			      result: false
+			    rule 1: OR
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
+			          rule 1: resource match([(paper/color : yellow)], [(paper/color : yellow)]) -> true
+			          rule 1: condition true -> true
+			      result: true
+			    rule 1: END Exchange -> true
 			result: true
 			"""
 		);
@@ -736,16 +741,19 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
-			      policy 4: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
-			        rule 1: resource match([(paper/color : white)], [(paper/color : green)]) -> false
-			    result: false
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
-			      policy 4: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
-			        rule 1: resource match([(paper/color : yellow)], [(paper/color : green)]) -> false
-			    result: false
+			    rule 1: evaluating OR(Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
+			          rule 1: resource match([(paper/color : white)], [(paper/color : green)]) -> false
+			      result: false
+			    rule 1: OR
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
+			          rule 1: resource match([(paper/color : yellow)], [(paper/color : green)]) -> false
+			      result: false
+			    rule 1: END Exchange -> false
 			result: false
 			"""
 		);
@@ -829,18 +837,21 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper), (color : white)]) -> true
-			        rule 1: condition true -> true
-			    result: true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
-			        rule 1: resource match([(color : white)], [(resource/type : paper), (color : white)]) -> true
-			        rule 1: condition true -> true
-			    result: true
+			    rule 1: evaluating AND(Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			          rule 1: resource match([(resource/type : paper)], [(resource/type : paper), (color : white)]) -> true
+			          rule 1: condition true -> true
+			      result: true
+			    rule 1: AND
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
+			          rule 1: resource match([(color : white)], [(resource/type : paper), (color : white)]) -> true
+			          rule 1: condition true -> true
+			      result: true
+			    rule 1: END Exchange -> true
 			result: true
 			"""
 		);
@@ -862,17 +873,20 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
-			        rule 1: condition true -> true
-			    result: true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
-			        rule 1: resource match([(color : white)], [(resource/type : paper)]) -> false
-			    result: false
+			    rule 1: evaluating AND(Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			          rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			          rule 1: condition true -> true
+			      result: true
+			    rule 1: AND
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
+			          rule 1: resource match([(color : white)], [(resource/type : paper)]) -> false
+			      result: false
+			    rule 1: END Exchange -> false
 			result: false
 			"""
 		);
@@ -894,11 +908,13 @@ class SemanticsTest {
 			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=1]
 			    rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1: condition true -> true
-			    rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
-			      policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
-			        rule 1: resource match([(resource/type : paper)], [(color : white)]) -> false
-			    result: false
+			    rule 1: evaluating AND(Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME])
+			      rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
+			          rule 1: resource match([(resource/type : paper)], [(color : white)]) -> false
+			      result: false
+			    rule 1: END Exchange -> false
 			result: false
 			"""
 		);

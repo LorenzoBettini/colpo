@@ -10,6 +10,7 @@ import java.util.Set;
 import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
+import colpo.core.CompositeExchange;
 import colpo.core.EvaluationContext;
 import colpo.core.Exchange;
 import colpo.core.OrExchange;
@@ -138,16 +139,38 @@ public class Semantics {
 		boolean result = true;
 		R.add(request);
 
-		if (exchange instanceof OrExchange orExchange)
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				|| evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof AndExchange orExchange)
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R)
-				&& evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
-		else if (exchange instanceof SingleExchange singleExchange)
+		var isComposite = exchange instanceof CompositeExchange;
+
+		if (isComposite) {
+			trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
+			trace.addIndent();
+		}
+
+		if (exchange instanceof OrExchange orExchange) {
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
+			if (!result) {
+				trace.removeIndent();
+				trace.add(String.format("rule %d: OR", ruleIndex));
+				trace.addIndent();
+				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+			}
+		} else if (exchange instanceof AndExchange orExchange) {
+			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
+			if (result) {
+				trace.removeIndent();
+				trace.add(String.format("rule %d: AND", ruleIndex));
+				trace.addIndent();
+				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
+			}
+		} else if (exchange instanceof SingleExchange singleExchange)
 			result = evaluate(policyIndex, ruleIndex, singleExchange, request, R);
 		else // exchange is null
 			result = true;
+
+		if (isComposite) {
+			trace.removeIndent();
+			trace.add(String.format("rule %d: END Exchange -> %s", ruleIndex, result));
+		}
 
 		R.remove(request);
 
