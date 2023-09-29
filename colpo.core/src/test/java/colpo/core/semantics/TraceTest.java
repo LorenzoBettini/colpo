@@ -43,6 +43,35 @@ class TraceTest {
 				fifth line
 				""", trace.toString());
 	}
+
+	@Test
+	void testTraceAddAndThenIndent() {
+		trace.addAndThenIndent("first line");
+		trace.add("second line");
+		trace.addAndThenIndent("third line");
+		trace.add("fourth line");
+		assertEquals("""
+				first line
+				  second line
+				  third line
+				    fourth line
+				""", trace.toString());
+	}
+
+	@Test
+	void testTraceAddInPreviousIndent() {
+		trace.addAndThenIndent("first line");
+		trace.add("second line");
+		trace.addInPreviousIndent("third line");
+		trace.add("fourth line");
+		assertEquals("""
+				first line
+				  second line
+				third line
+				  fourth line
+				""", trace.toString());
+	}
+
 	@Test
 	void testTraceReset() {
 		trace.add("first line");
