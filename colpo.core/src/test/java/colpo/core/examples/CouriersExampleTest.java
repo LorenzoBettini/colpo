@@ -209,7 +209,7 @@ class CouriersExampleTest {
 			        rule 2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 2: condition affiliation != RabbitService -> true
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
-			        rule 2: satisfied Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
+			        rule 2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    result: true
 			result: true
 			"""
@@ -326,7 +326,7 @@ class CouriersExampleTest {
 			        rule 2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			        rule 2: condition affiliation != RabbitService -> true
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
-			        rule 2: satisfied Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
+			        rule 2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    result: true
 			    rule 1: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
@@ -490,7 +490,7 @@ class CouriersExampleTest {
 			        rule 2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], to=anySuchThat: [(service : delivery), (company : RabbitService)]]
 			        policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			        policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
-			        rule 2: satisfied Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
+			        rule 2: already found Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
 			    result: true
 			result: true
 			"""

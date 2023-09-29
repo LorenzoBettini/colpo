@@ -232,7 +232,7 @@ public class Semantics {
 			exchangeRequestFrom);
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
-			trace.add(String.format("rule %d: satisfied %s", ruleIndex, exchangeRequest));
+			trace.add(String.format("rule %d: already found %s", ruleIndex, exchangeRequest));
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}

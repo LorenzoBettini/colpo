@@ -557,7 +557,7 @@ class SemanticsTest {
 			        rule 1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 1: condition true -> true
 			        rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : printer)], credentials=[], to=ME]
-			        rule 1: satisfied Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			        rule 1: already found Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
 			    result: true
 			result: true
 			"""
@@ -593,7 +593,7 @@ class SemanticsTest {
 			        rule 1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			        rule 1: condition true -> true
 			        rule 1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]
-			        rule 1: satisfied Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			        rule 1: already found Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
 			    result: true
 			result: true
 			"""
