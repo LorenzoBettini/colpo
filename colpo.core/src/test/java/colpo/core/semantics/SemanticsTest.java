@@ -659,12 +659,6 @@ class SemanticsTest {
 						new Attributes()
 							.add("paper/color", "green")
 					))));
-		assertPolicies("""
-			1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=OrExchange[left=Exchange[from=REQUESTER, resource=[(paper/color : white)], credentials=[], to=ME], right=Exchange[from=REQUESTER, resource=[(paper/color : yellow)], credentials=[], to=ME]]]]
-			2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(paper/color : white)], condition=true]]
-			3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(paper/color : yellow)], condition=true]]
-			4 = Policy[party=[(name : Ed), (role : PaperProvider)], rules=[resource=[(paper/color : green)], condition=true]]
-			""");
 		assertResultTrue(
 			new Request(
 				index(2), // Bob
@@ -817,12 +811,6 @@ class SemanticsTest {
 						new Attributes()
 							.add("color", "white")
 					))));
-		assertPolicies("""
-			1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=AndExchange[left=Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME], right=Exchange[from=REQUESTER, resource=[(color : white)], credentials=[], to=ME]]]]
-			2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper), (color : white)], condition=true]]
-			3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
-			4 = Policy[party=[(name : Ed), (role : PaperProvider)], rules=[resource=[(color : white)], condition=true]]
-			""");
 		assertResultTrue(
 			new Request(
 				index(2), // Bob

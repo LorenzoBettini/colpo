@@ -76,7 +76,7 @@ class CouriersExampleTest {
 					))));
 		assertPolicies("""
 		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=true]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OrExchange[left=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME], right=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME]]]]
+		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME])]]
 		""");
 		assertResultTrue(
 			new Request(
@@ -174,7 +174,7 @@ class CouriersExampleTest {
 					))));
 		assertPolicies("""
 		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OrExchange[left=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME], right=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME]]]]
+		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME])]]
 		""");
 		assertResultTrue(
 			new Request(
@@ -295,7 +295,7 @@ class CouriersExampleTest {
 					))));
 		assertPolicies("""
 		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=AndExchange[left=Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME], right=Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME]]]]
+		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=AND(Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME])]]
 		3 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Grosseto)], condition=true]]
 		""");
 		assertResultTrue(
