@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
@@ -56,15 +57,15 @@ public class Semantics {
 			if (policiesToEvaluate.isEmpty()) {
 				result = false;
 			} else {
+				Predicate<PolicyData> evaluatePredicate =
+						d -> evaluate(d.index(), d.policy(),
+								request.withFrom(d.index()), R);
 				if (from.getQuantifier() == Quantifier.ANY) {
 					result = policiesToEvaluate.stream()
-						.anyMatch(d -> 
-							evaluate(d.index(), d.policy(),
-								request.withFrom(d.index()), R));
+						.anyMatch(evaluatePredicate);
 				} else {
 					result = policiesToEvaluate.stream()
-						.allMatch(d ->evaluate(d.index(), d.policy(),
-								request.withFrom(d.index()), R));
+						.allMatch(evaluatePredicate);
 				}
 			}
 		}
