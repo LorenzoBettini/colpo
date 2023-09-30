@@ -192,15 +192,16 @@ public class Semantics {
 
 		if (!exchangeFrom.isRequester()) {
 			var fromSet = computeIndexSet(policyIndex, exchangeFrom.getAttributes());
-			if (exchangeFrom.getQuantifier() == Quantifier.ALL)
+			Predicate<PolicyData> evaluatePredicate =
+				d -> evaluateExchangeRequest(ruleIndex, exchange,
+					exchangeRequestRequester,
+					index(d.index()), R);
+			if (exchangeFrom.getQuantifier() == Quantifier.ALL) {
 				return fromSet.stream()
-					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
-						exchangeRequestRequester,
-						index(d.index()), R));
+					.allMatch(evaluatePredicate);
+			}
 			return fromSet.stream()
-					.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
-							exchangeRequestRequester,
-							index(d.index()), R));
+					.anyMatch(evaluatePredicate);
 		}
 
 		if (!exchangeTo.isMe()) {
@@ -211,15 +212,16 @@ public class Semantics {
 				return true; // there's no one to satisfy
 			}
 
-			if (exchangeTo.getQuantifier() == Quantifier.ALL)
+			Predicate<PolicyData> evaluatePredicate =
+				d -> evaluateExchangeRequest(ruleIndex, exchange,
+					index(d.index()),
+					exchangeRequestFrom, R);
+			if (exchangeTo.getQuantifier() == Quantifier.ALL) {
 				return toSet.stream()
-					.allMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
-						index(d.index()),
-						exchangeRequestFrom, R));
+					.allMatch(evaluatePredicate);
+			}
 			return toSet.stream()
-					.anyMatch(d -> evaluateExchangeRequest(ruleIndex, exchange,
-							index(d.index()),
-							exchangeRequestFrom, R));
+					.anyMatch(evaluatePredicate);
 			
 		}
 
