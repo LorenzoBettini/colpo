@@ -119,13 +119,13 @@ public class Semantics {
 					return value;
 				}
 			});
-			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), result));
+			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
 			if (!result)
 				return false;
 			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, R);
 			return result;
 		} catch (Exception e) {
-			trace.add(String.format("rule %d: condition %s -> %s", ruleIndex, rule.getCondition(), e.getMessage()));
+			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), e.getMessage()));
 			return false;
 		} finally {
 			trace.removeIndent();
@@ -139,19 +139,19 @@ public class Semantics {
 		var isComposite = exchange instanceof CompositeExchange;
 
 		if (isComposite) {
-			trace.addAndThenIndent(String.format("rule %d: evaluating %s", ruleIndex, exchange));
+			trace.addAndThenIndent(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 		}
 
 		if (exchange instanceof OrExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
 			if (!result) {
-				trace.addInPreviousIndent(String.format("rule %d: OR", ruleIndex));
+				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 			}
 		} else if (exchange instanceof AndExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, R);
 			if (result) {
-				trace.addInPreviousIndent(String.format("rule %d: AND", ruleIndex));
+				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, R);
 			}
 		} else if (exchange instanceof SingleExchange singleExchange)
@@ -160,7 +160,7 @@ public class Semantics {
 			result = true;
 
 		if (isComposite) {
-			trace.removeIndentAndThenAdd(String.format("rule %d: END Exchange -> %s", ruleIndex, result));
+			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s", traceForRule(policyIndex, ruleIndex), result));
 		}
 
 		R.remove(request);
@@ -169,7 +169,7 @@ public class Semantics {
 	}
 
 	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
-		trace.add(String.format("rule %d: evaluating %s", ruleIndex, exchange));
+		trace.add(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 
 		Participant exchangeRequestRequester = index(policyIndex);
 		Participant exchangeRequestFrom = request.requester();
@@ -185,7 +185,7 @@ public class Semantics {
 			return fromSet.stream()
 				.allMatch(d1 -> 
 					toSet.stream().allMatch(d2 ->
-					evaluateExchangeRequest(ruleIndex, exchange,
+					evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
 						index(d2.index()),
 						index(d1.index()), R)));
 		}
@@ -193,7 +193,7 @@ public class Semantics {
 		if (!exchangeFrom.isRequester()) {
 			var fromSet = computeIndexSet(policyIndex, exchangeFrom.getAttributes());
 			Predicate<PolicyData> evaluatePredicate =
-				d -> evaluateExchangeRequest(ruleIndex, exchange,
+				d -> evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
 					exchangeRequestRequester,
 					index(d.index()), R);
 			if (exchangeFrom.getQuantifier() == Quantifier.ALL) {
@@ -208,12 +208,12 @@ public class Semantics {
 			var toSet = computeIndexSet(exchangeRequestFrom.getIndex(), exchangeTo.getAttributes());
 
 			if (toSet.isEmpty()) {
-				trace.add(String.format("rule %d: satisfied: no one to exchange", ruleIndex));
+				trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
 				return true; // there's no one to satisfy
 			}
 
 			Predicate<PolicyData> evaluatePredicate =
-				d -> evaluateExchangeRequest(ruleIndex, exchange,
+				d -> evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
 					index(d.index()),
 					exchangeRequestFrom, R);
 			if (exchangeTo.getQuantifier() == Quantifier.ALL) {
@@ -225,7 +225,7 @@ public class Semantics {
 			
 		}
 
-		return evaluateExchangeRequest(ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
+		return evaluateExchangeRequest(policyIndex, ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
 	}
 
 	private List<PolicyData> computeIndexSet(int indexToSkip, Attributes attributesToMatch) {
@@ -239,7 +239,7 @@ public class Semantics {
 			.toList();
 	}
 
-	private boolean evaluateExchangeRequest(int ruleIndex, SingleExchange exchange,
+	private boolean evaluateExchangeRequest(int policyIndex, int ruleIndex, SingleExchange exchange,
 			Participant exchangeRequestRequester, Participant exchangeRequestFrom, Set<Request> R) {
 		var exchangeRequest = new Request(
 			exchangeRequestRequester,
@@ -248,11 +248,15 @@ public class Semantics {
 			exchangeRequestFrom);
 		boolean result = true;
 		if (R.contains(exchangeRequest)) {
-			trace.add(String.format("rule %d: already found %s", ruleIndex, exchangeRequest));
+			trace.add(String.format("%s: already found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
 		} else {
 			result = evaluate(exchangeRequest, R);
 		}
 		return result;
+	}
+
+	private String traceForRule(int policyIndex, int ruleIndex) {
+		return String.format("rule %d", ruleIndex);
 	}
 
 	public Trace getTrace() {
