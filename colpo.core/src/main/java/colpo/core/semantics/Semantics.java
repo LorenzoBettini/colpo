@@ -80,15 +80,15 @@ public class Semantics {
 			.filter(d -> {
 				var attributes1 = from.getAttributes();
 				var attributes2 = d.policy().party();
-				return tryMatch("policy", d.index(), "from", attributes1, attributes2);
+				return tryMatch("policy " + d.index(), "from", attributes1, attributes2);
 			})
 			.toList();
 	}
 
-	private boolean tryMatch(String prefix, int index, String description, Attributes attributes1, Attributes attributes2) {
+	private boolean tryMatch(String prefix, String description, Attributes attributes1, Attributes attributes2) {
 		boolean matchResult = matcher.match(attributes1, attributes2);
-		trace.add(String.format("%s %d: %s match(%s, %s) -> %s",
-			prefix, index, description, attributes1, attributes2, matchResult));
+		trace.add(String.format("%s: %s match(%s, %s) -> %s",
+			prefix, description, attributes1, attributes2, matchResult));
 		return matchResult;
 	}
 
@@ -105,7 +105,7 @@ public class Semantics {
 		trace.addAndThenIndent(String.format("policy %d: evaluating %s",
 				policyIndex, request));
 		try {
-			boolean result = tryMatch("rule", ruleIndex, "resource", request.resource(), rule.getResource());
+			boolean result = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
 			if (!result)
 				return false;
 			result = rule.getCondition().evaluate(new EvaluationContext() {
@@ -234,7 +234,7 @@ public class Semantics {
 			.filter(d -> {
 				var attributes1 = attributesToMatch;
 				var attributes2 = d.policy().party();
-				return tryMatch("policy", d.index(), "from", attributes1, attributes2);
+				return tryMatch("policy " + d.index(), "from", attributes1, attributes2);
 			})
 			.toList();
 	}
