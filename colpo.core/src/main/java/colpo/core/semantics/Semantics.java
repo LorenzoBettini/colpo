@@ -256,7 +256,7 @@ public class Semantics {
 	}
 
 	private String traceForRule(int policyIndex, int ruleIndex) {
-		return String.format("rule %d", ruleIndex);
+		return String.format("rule %d.%d", policyIndex, ruleIndex);
 	}
 
 	public Trace getTrace() {
