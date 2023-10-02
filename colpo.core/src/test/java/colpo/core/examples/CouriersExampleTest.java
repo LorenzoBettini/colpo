@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import colpo.core.AndExchange;
 import colpo.core.Attributes;
+import colpo.core.ContextHandler;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.OrExchange;
 import colpo.core.Policies;
@@ -426,16 +427,23 @@ class CouriersExampleTest {
 						new Attributes()
 							.add("type", "addrInfo")
 							.add("city", "Firenze"),
-							new SingleExchange(
-								anySuchThat(new Attributes()
-										.add("service", "delivery")
-										.add("company", "RabbitService")),
-								new Attributes()
-									.add("type", "addrInfo")
-									.add("city", "Pisa"),
-								new Attributes()
-									.add("affiliation", "FastAndFurious"),
-								me())
+						new ExpressionWithDescription(
+							attributes -> {
+								var timeHour = (int) attributes.name("timeHour");
+								return timeHour > 7 && timeHour < 20 &&
+									attributes.name("position").equals("Firenze");
+							},
+							"timeHour > 7 and timeHour < 20 and position = Firenze"),
+						new SingleExchange(
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")),
+							new Attributes()
+								.add("type", "addrInfo")
+								.add("city", "Pisa"),
+							new Attributes()
+								.add("affiliation", "FastAndFurious"),
+							me())
 						))
 				))
 		.add(
@@ -466,6 +474,15 @@ class CouriersExampleTest {
 					))
 				));
 		// don't assert policies for simplicity and readability
+
+		// add environmental information to context handler for the first two parties
+		semantics.contextHandler(new ContextHandler()
+			.add(1, "timeHour", 10)
+			.add(1, "position", "Lucca")
+			.add(2, "timeHour", 10)
+			.add(2, "position", "Firenze")
+		);
+
 		assertResultTrue(
 			new Request(
 				index(1), // RabbitService
@@ -487,7 +504,7 @@ class CouriersExampleTest {
 			    rule 2.1: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Prato)]) -> false
 			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 2.2: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Firenze)]) -> true
-			    rule 2.2: condition true -> true
+			    rule 2.2: condition timeHour > 7 and timeHour < 20 and position = Firenze -> true
 			    rule 2.2: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], to=ME]
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
