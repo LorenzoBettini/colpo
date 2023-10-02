@@ -12,7 +12,7 @@ import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
-import colpo.core.EvaluationContext;
+import colpo.core.AttributesResolver;
 import colpo.core.Exchange;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -108,7 +108,7 @@ public class Semantics {
 			boolean result = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
 			if (!result)
 				return false;
-			result = rule.getCondition().evaluate(new EvaluationContext() {
+			result = rule.getCondition().evaluate(new AttributesResolver() {
 				@Override
 				public Object name(String name) throws UndefinedName {
 					var value = request.resource().name(name);
