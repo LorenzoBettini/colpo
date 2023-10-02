@@ -12,6 +12,7 @@ import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
+import colpo.core.ContextHandler;
 import colpo.core.AttributesResolver;
 import colpo.core.Exchange;
 import colpo.core.OrExchange;
@@ -33,9 +34,17 @@ public class Semantics {
 	private Policies policies;
 	private AttributeMatcher matcher = new AttributeMatcher();
 	private Trace trace = new Trace();
+	private ContextHandler contextHandler = EMPTY_CONTEXT_HANDLER;
+
+	private static ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
 
 	public Semantics(Policies policies) {
 		this.policies = policies;
+	}
+
+	public Semantics contextHandler(ContextHandler contextHandler) {
+		this.contextHandler = contextHandler;
+		return this;
 	}
 
 	public boolean evaluate(Request request) {
@@ -114,6 +123,8 @@ public class Semantics {
 					var value = request.resource().name(name);
 					if (value == null)
 						value = request.credentials().name(name);
+					if (value == null)
+						value = contextHandler.ofParty(policyIndex).name(name);
 					if (value == null)
 						throw new UndefinedName(name);
 					return value;

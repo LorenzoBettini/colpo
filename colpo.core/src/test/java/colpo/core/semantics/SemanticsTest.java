@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import colpo.core.AndExchange;
 import colpo.core.Attributes;
+import colpo.core.ContextHandler;
 import colpo.core.SingleExchange;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.OrExchange;
@@ -153,6 +154,19 @@ class SemanticsTest {
 							c -> c.name("job/role").equals("writer"),
 							"job/role = writer"
 						)
+					))))
+		.add(
+			new Policy( // index 6
+				new Attributes()
+					.add("name", "Faye"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						new ExpressionWithDescription(
+							c -> c.name("current/city").equals("Firenze"),
+							"current/city = Firenze"
+						)
 					))));
 		assertPolicies("""
 		1 = Policy[party=[(name : Alice)], rules=[resource=[], condition=true]]
@@ -160,6 +174,7 @@ class SemanticsTest {
 		3 = Policy[party=[(name : Carl)], rules=[resource=[(paper : white)], condition=always false]]
 		4 = Policy[party=[(name : David)], rules=[resource=[(paper : white), (file/format : PDF)], condition=file/format = PDF]]
 		5 = Policy[party=[(name : Edward)], rules=[resource=[(paper : white)], condition=job/role = writer]]
+		6 = Policy[party=[(name : Faye)], rules=[resource=[(paper : white)], condition=current/city = Firenze]]
 		""");
 		// Alice requests
 		// ( resource: (paper : white), from: 2)
@@ -267,6 +282,49 @@ class SemanticsTest {
 			  policy 5: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=5]
 			    rule 5.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 5.1: condition job/role = writer -> true
+			result: true
+			"""
+		);
+
+		// TEST for ContextHandler
+
+		// Alice requests
+		// ( resource: (paper : white), credentials: (job/role : writer), from: 6)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes()
+					.add("job/role", "writer"),
+				index(6)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
+			  policy 6: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
+			    rule 6.1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 6.1: condition current/city = Firenze -> Undefined name: current/city
+			result: false
+			"""
+		);
+
+		semantics.contextHandler(new ContextHandler()
+			.add(6, "current/city", "Firenze"));
+
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes()
+					.add("job/role", "writer"),
+				index(6)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
+			  policy 6: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
+			    rule 6.1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 6.1: condition current/city = Firenze -> true
 			result: true
 			"""
 		);
