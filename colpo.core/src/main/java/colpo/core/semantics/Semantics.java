@@ -5,15 +5,16 @@ import static colpo.core.Participant.index;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import colpo.core.AndExchange;
 import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
-import colpo.core.AttributesResolver;
 import colpo.core.Exchange;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -117,19 +118,15 @@ public class Semantics {
 			boolean result = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
 			if (!result)
 				return false;
-			result = rule.getCondition().evaluate(new AttributesResolver() {
-				@Override
-				public Object name(String name) throws UndefinedName {
-					var value = request.resource().name(name);
-					if (value == null)
-						value = request.credentials().name(name);
-					if (value == null)
-						value = contextHandler.ofParty(policyIndex).name(name);
-					if (value == null)
-						throw new UndefinedName(name);
-					return value;
-				}
-			});
+			result = rule.getCondition().evaluate(
+				name -> Stream.of(
+							request.resource(), request.credentials(),
+							contextHandler.ofParty(policyIndex))
+					.map(attributes -> attributes.name(name))
+					.filter(Objects::nonNull)
+					.findFirst()
+					.orElseThrow(() -> new UndefinedName(name))
+			);
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
 			if (!result)
 				return false;
