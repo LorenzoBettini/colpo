@@ -1056,6 +1056,7 @@ class SemanticsTest {
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[from=anySuchThat: [(role : PaperProvider)], resource=[(paper/color : green)], credentials=[], to=ME]
+			    policy 1: from match([(role : PaperProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
 			    policy 4: from match([(role : PaperProvider)], [(name : Ed), (role : PaperProvider)]) -> true
@@ -1155,6 +1156,7 @@ class SemanticsTest {
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[from=allSuchThat: [(role : PaperProvider)], resource=[(resource/type : paper)], credentials=[], to=ME]
+			    policy 1: from match([(role : PaperProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
 			    policy 4: from match([(role : PaperProvider)], [(name : Ed), (role : PaperProvider)]) -> true
@@ -1253,6 +1255,7 @@ class SemanticsTest {
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=allSuchThat: [(role : PrinterProvider)]]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
 			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
@@ -1345,6 +1348,7 @@ class SemanticsTest {
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=anySuchThat: [(role : PrinterProvider)]]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
 			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
@@ -1411,6 +1415,7 @@ class SemanticsTest {
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=anySuchThat: [(role : InkProvider)]]
 			    policy 1: from match([(role : InkProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
+			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    rule 1.1: satisfied: no one to exchange
 			result: true
 			"""

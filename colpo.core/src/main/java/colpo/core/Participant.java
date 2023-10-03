@@ -61,6 +61,10 @@ public class Participant {
 		return quantifier;
 	}
 
+	public boolean isAll() {
+		return quantifier == Quantifier.ALL;
+	}
+
 	public Attributes getAttributes() {
 		return attributes;
 	}

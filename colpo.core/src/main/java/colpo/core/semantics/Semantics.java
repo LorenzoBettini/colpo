@@ -3,10 +3,12 @@ package colpo.core.semantics;
 import static colpo.core.Participant.index;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -179,72 +181,67 @@ public class Semantics {
 	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> R) {
 		trace.add(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 
-		Participant exchangeRequestRequester = index(policyIndex);
-		Participant exchangeRequestFrom = request.requester();
-
 		var exchangeFrom = exchange.from();
 		var exchangeTo = exchange.to();
 
-		if (!exchangeFrom.isRequester() && !exchangeTo.isMe()) {
-			// TODO: assumed to be both allSuchThat
-			var fromSet = computeIndexSet(-1, exchangeFrom.getAttributes());
-			var toSet = computeIndexSet(-1, exchangeTo.getAttributes());
+		Collection<Integer> fromIndexes;
+		Collection<Integer> toIndexes;
 
-			return fromSet.stream()
-				.allMatch(d1 -> 
-					toSet.stream().allMatch(d2 ->
-					evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-						index(d2.index()),
-						index(d1.index()), R)));
+		if (exchangeFrom.isRequester()) {
+			fromIndexes = Collections.singleton(request.requester().getIndex());
+		} else {
+			fromIndexes = computeIndexes(exchangeFrom.getAttributes());
 		}
 
-		if (!exchangeFrom.isRequester()) {
-			var fromSet = computeIndexSet(policyIndex, exchangeFrom.getAttributes());
-			Predicate<PolicyData> evaluatePredicate =
-				d -> evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-					exchangeRequestRequester,
-					index(d.index()), R);
-			if (exchangeFrom.getQuantifier() == Quantifier.ALL) {
-				return fromSet.stream()
-					.allMatch(evaluatePredicate);
-			}
-			return fromSet.stream()
-					.anyMatch(evaluatePredicate);
+		if (exchangeTo.isMe()) {
+			toIndexes = Collections.singleton(policyIndex);
+		} else {
+			toIndexes = computeIndexes(exchangeTo.getAttributes());
 		}
 
-		if (!exchangeTo.isMe()) {
-			var toSet = computeIndexSet(exchangeRequestFrom.getIndex(), exchangeTo.getAttributes());
-
-			if (toSet.isEmpty()) {
-				trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
-				return true; // there's no one to satisfy
-			}
-
-			Predicate<PolicyData> evaluatePredicate =
-				d -> evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-					index(d.index()),
-					exchangeRequestFrom, R);
-			if (exchangeTo.getQuantifier() == Quantifier.ALL) {
-				return toSet.stream()
-					.allMatch(evaluatePredicate);
-			}
-			return toSet.stream()
-					.anyMatch(evaluatePredicate);
-			
+		if (toIndexes.isEmpty()) {
+			trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
+			return true; // there's no one to satisfy
 		}
 
-		return evaluateExchangeRequest(policyIndex, ruleIndex, exchange, exchangeRequestRequester, exchangeRequestFrom, R);
+		BiPredicate<Integer, Integer> differentIndexes = (i1, i2) -> !i1.equals(i2);
+
+		Predicate<Integer> innerPredicate;
+
+		if (exchangeTo.isAll()) {
+			innerPredicate = fromIndex ->
+				toIndexes.stream()
+					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
+					.allMatch(toIndex ->
+						evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+							index(toIndex), index(fromIndex), R));
+		} else {
+			innerPredicate = fromIndex ->
+				toIndexes.stream()
+					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
+					.anyMatch(toIndex ->
+						evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+							index(toIndex), index(fromIndex), R));
+		}
+
+		if (exchangeFrom.isAll()) {
+			return fromIndexes.stream()
+				.allMatch(innerPredicate);
+		} else {
+			return fromIndexes.stream()
+				.anyMatch(innerPredicate);
+		}
 	}
 
-	private List<PolicyData> computeIndexSet(int indexToSkip, Attributes attributesToMatch) {
+	private List<Integer> computeIndexes(Attributes attributesToMatch) {
 		return policies.getPolicyData()
-			.filter(d -> d.index() != indexToSkip)
-			.filter(d -> {
-				var attributes1 = attributesToMatch;
-				var attributes2 = d.policy().party();
-				return tryMatch("policy " + d.index(), "from", attributes1, attributes2);
-			})
-			.toList();
+				.filter(d -> {
+					var attributes1 = attributesToMatch;
+					var attributes2 = d.policy().party();
+					return tryMatch("policy " + d.index(), "from", attributes1, attributes2);
+				})
+				.map(PolicyData::index)
+				.toList();
 	}
 
 	private boolean evaluateExchangeRequest(int policyIndex, int ruleIndex, SingleExchange exchange,
