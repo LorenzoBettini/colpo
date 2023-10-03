@@ -203,6 +203,10 @@ public class Semantics {
 			trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
 			return true; // there's no one to satisfy
 		}
+		if (fromIndexes.isEmpty()) {
+			trace.add(String.format("%s: not satisfied: no one from exchange", traceForRule(policyIndex, ruleIndex)));
+			return false; // no one can satisfy
+		}
 
 		BiPredicate<Integer, Integer> differentIndexes = (i1, i2) -> !i1.equals(i2);
 

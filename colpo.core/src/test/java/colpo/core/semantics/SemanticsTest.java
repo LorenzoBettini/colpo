@@ -1423,6 +1423,64 @@ class SemanticsTest {
 	}
 
 	@Test
+	void exchangeFromIsEmptyEvaluatesToFalse() {
+		// Alice gives printer provided any Ink providers gives ink to me
+		// Bob gives paper
+		// there's no InkProvider
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+								anySuchThat(new Attributes()
+										.add("role", "InkProvider")),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							me())
+						))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))));
+
+		assertResultFalse(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1.1: condition true -> true
+			    rule 1.1: evaluating Exchange[from=anySuchThat: [(role : InkProvider)], resource=[(resource/type : paper)], credentials=[], to=ME]
+			    policy 1: from match([(role : InkProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
+			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
+			    rule 1.1: not satisfied: no one from exchange
+			result: false
+			"""
+		);
+	}
+
+	@Test
 	void exchangeFromToAllSuchThat() {
 		// Alice gives printer provided the all paper provider gives paper to all printer providers
 		// Bob gives paper
