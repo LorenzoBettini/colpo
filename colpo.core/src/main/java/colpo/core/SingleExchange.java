@@ -44,7 +44,7 @@ public class SingleExchange
 
 	@Override
 	public String toString() {
-		return "Exchange[from=" + from + ", resource=" + resource + ", credentials=" + credentials + ", to=" + to
+		return "Exchange[to=" + to + ", resource=" + resource + ", credentials=" + credentials + ", from=" + from
 				+ "]";
 	}
 
