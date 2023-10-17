@@ -1469,7 +1469,7 @@ class SemanticsTest {
 
 	@Test
 	void exchangeFromAndToWouldBeEqual() {
-		// Alice gives printer provided any Ink printer gives ink to me
+		// Alice gives printer provided any printer provider gives paper to me
 		// Bob gives paper
 		policies.add(
 			new Policy( // index 1
@@ -1486,7 +1486,7 @@ class SemanticsTest {
 								.add("resource/type", "paper"),
 							new Attributes(),
 							anySuchThat(new Attributes()
-									.add("role", "PrinterProvider")))
+								.add("role", "PrinterProvider")))
 						))))
 		.add(
 			new Policy( // index 2
@@ -1516,6 +1516,125 @@ class SemanticsTest {
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
 			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
+			result: false
+			"""
+		);
+	}
+
+	@Test
+	void exchangeFromAndToWouldBeEqualWithAllSuchThat() {
+		// Alice gives printer provided all printer provider gives paper to all printer provider
+		// Bob gives paper
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+							allSuchThat(new Attributes()
+									.add("role", "PrinterProvider")),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							allSuchThat(new Attributes()
+								.add("role", "PrinterProvider")))
+						))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))));
+
+		assertResultFalse(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1.1: condition true -> true
+			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=allSuchThat: [(role : PrinterProvider)]]
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
+			    rule 1.1: not satisfied: no request could be generated
+			result: false
+			"""
+		);
+	}
+
+	@Test
+	void exchangeFromAndToWouldBeEqualWithAnySuchThat() {
+		// Alice gives printer provided any printer provider gives paper to any printer provider
+		// Bob gives paper
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+							anySuchThat(new Attributes()
+									.add("role", "PrinterProvider")),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							anySuchThat(new Attributes()
+								.add("role", "PrinterProvider")))
+						))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper")
+					))));
+
+		assertResultFalse(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1.1: condition true -> true
+			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			result: false

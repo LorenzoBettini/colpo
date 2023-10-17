@@ -212,29 +212,50 @@ public class Semantics {
 
 		Predicate<Integer> innerPredicate;
 
+		// to keep track of the fact that at least one inner
+		// "loop" is executed; that's required for the semantics of allMatch
+		// see below
+		var atLeastOneRequest = new Object() {
+			boolean hasBeenGenerated = false;
+		};
+
 		if (exchangeTo.isAll()) {
 			innerPredicate = fromIndex ->
 				toIndexes.stream()
 					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
-					.allMatch(toIndex ->
-						evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-							index(toIndex), index(fromIndex), requests));
+					.allMatch(toIndex -> {
+						atLeastOneRequest.hasBeenGenerated = true;
+						return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+							index(toIndex), index(fromIndex), requests);
+					});
 		} else {
 			innerPredicate = fromIndex ->
 				toIndexes.stream()
 					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
-					.anyMatch(toIndex ->
-						evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-							index(toIndex), index(fromIndex), requests));
+					.anyMatch(toIndex -> {
+						atLeastOneRequest.hasBeenGenerated = true;
+						return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+							index(toIndex), index(fromIndex), requests);
+					});
 		}
 
+		var result = false;
+
 		if (exchangeFrom.isAll()) {
-			return fromIndexes.stream()
+			result = fromIndexes.stream()
 				.allMatch(innerPredicate);
+			// this additional check is required because allMatch returns
+			// true if the stream was empty
+			if (!atLeastOneRequest.hasBeenGenerated) {
+				trace.add(String.format("%s: not satisfied: no request could be generated", traceForRule(policyIndex, ruleIndex)));
+				result = false;
+			}
 		} else {
-			return fromIndexes.stream()
+			result = fromIndexes.stream()
 				.anyMatch(innerPredicate);
 		}
+
+		return result;
 	}
 
 	private List<Integer> computeIndexes(Attributes attributesToMatch) {
