@@ -213,7 +213,7 @@ public class Semantics {
 
 		BiPredicate<Integer, Integer> differentIndexes = (i1, i2) -> !i1.equals(i2);
 
-		Predicate<Integer> innerPredicate;
+		Predicate<Integer> innerOperation;
 
 		// to keep track of the fact that at least one inner
 		// "loop" is executed; that's required for the semantics of allMatch
@@ -222,31 +222,32 @@ public class Semantics {
 			boolean hasBeenGenerated = false;
 		};
 
+		BiPredicate<Integer, Integer> innerPredicate = (fromIndex, toIndex) -> {
+			// record that at least one inner loop has been executed
+			// useful for the external allMatch case
+			// see below
+			atLeastOneRequest.hasBeenGenerated = true;
+			return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+				index(toIndex), index(fromIndex), requests);
+		};
+
 		if (exchangeTo.isAll()) {
-			innerPredicate = fromIndex ->
+			innerOperation = fromIndex ->
 				toIndexes.stream()
 					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
-					.allMatch(toIndex -> {
-						atLeastOneRequest.hasBeenGenerated = true;
-						return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-							index(toIndex), index(fromIndex), requests);
-					});
+					.allMatch(toIndex -> innerPredicate.test(fromIndex, toIndex));
 		} else {
-			innerPredicate = fromIndex ->
+			innerOperation = fromIndex ->
 				toIndexes.stream()
 					.filter(toIndex -> differentIndexes.test(toIndex, fromIndex))
-					.anyMatch(toIndex -> {
-						atLeastOneRequest.hasBeenGenerated = true;
-						return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-							index(toIndex), index(fromIndex), requests);
-					});
+					.anyMatch(toIndex -> innerPredicate.test(fromIndex, toIndex));
 		}
 
 		var result = false;
 
 		if (exchangeFrom.isAll()) {
 			result = fromIndexes.stream()
-				.allMatch(innerPredicate);
+				.allMatch(innerOperation);
 			// this additional check is required because allMatch returns
 			// true if the stream was empty
 			if (!atLeastOneRequest.hasBeenGenerated) {
@@ -255,7 +256,7 @@ public class Semantics {
 			}
 		} else {
 			result = fromIndexes.stream()
-				.anyMatch(innerPredicate);
+				.anyMatch(innerOperation);
 		}
 
 		return result;
