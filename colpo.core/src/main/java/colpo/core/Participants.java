@@ -7,38 +7,42 @@ import colpo.core.QuantifiedParticipant.Quantifier;
  */
 public class Participants {
 
-	private static final Attributes EMPTY = new Attributes();
+	private static final Attributes EMPTY_ATTRIBUTES = new Attributes();
+
+	private static final MeParticipant ME = new MeParticipant() {
+		@Override
+		public Attributes getAttributes() {
+			return EMPTY_ATTRIBUTES;
+		}
+
+		@Override
+		public String toString() {
+			return "ME";
+		}
+	};
+
+	private static final RequesterParticipant REQUESTER = new RequesterParticipant() {
+		@Override
+		public Attributes getAttributes() {
+			return EMPTY_ATTRIBUTES;
+		}
+
+		@Override
+		public String toString() {
+			return "REQUESTER";
+		}
+	};
 
 	public static IndexParticipant index(int index) {
 		return new IndexParticipant(index);
 	}
 
 	public static MeParticipant me() {
-		return new MeParticipant() {
-			@Override
-			public Attributes getAttributes() {
-				return EMPTY;
-			}
-
-			@Override
-			public String toString() {
-				return "ME";
-			}
-		};
+		return ME;
 	}
 
 	public static RequesterParticipant requester() {
-		return new RequesterParticipant() {
-			@Override
-			public Attributes getAttributes() {
-				return EMPTY;
-			}
-
-			@Override
-			public String toString() {
-				return "REQUESTER";
-			}
-		};
+		return REQUESTER;
 	}
 
 	public static QuantifiedParticipant anySuchThat(Attributes attributes) {
