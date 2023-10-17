@@ -460,11 +460,11 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							me())))))
+							requester())))))
 		.add(
 			new Policy( // index 2
 				new Attributes()
@@ -521,11 +521,11 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							me())))))
+							requester())))))
 		.add(
 			new Policy( // index 2
 				new Attributes()
@@ -536,11 +536,11 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "paper"),
 						new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("resource/type", "ink"),
 								new Attributes(),
-								me())))))
+								requester())))))
 		.add(
 			new Policy( // index 3
 				new Attributes()
@@ -551,11 +551,11 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "paper"),
 						new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("resource/type", "printer"),
 								new Attributes(),
-								me())))));
+								requester())))));
 		assertPolicies("""
 		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : paper)], credentials=[], to=ME]]]
 		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true, exchange=Exchange[from=REQUESTER, resource=[(resource/type : ink)], credentials=[], to=ME]]]
@@ -675,17 +675,17 @@ class SemanticsTest {
 							.add("resource/type", "printer"),
 						new OrExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("paper/color", "white"),
 								new Attributes(),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("paper/color", "yellow"),
 								new Attributes(),
-								me())
+								requester())
 						)))))
 		.add(
 			new Policy( // index 2
@@ -834,17 +834,17 @@ class SemanticsTest {
 							.add("resource/type", "printer"),
 						new AndExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("resource/type", "paper"),
 								new Attributes(),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("color", "white"),
 								new Attributes(),
-								me())
+								requester())
 						)))))
 		.add(
 			new Policy( // index 2
@@ -994,12 +994,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							anySuchThat(new Attributes()
-									.add("role", "PaperProvider")),
+							me(),
 							new Attributes()
 								.add("paper/color", "green"),
 							new Attributes(),
-							me())
+							anySuchThat(new Attributes()
+									.add("role", "PaperProvider")))
 						))))
 		.add(
 			new Policy( // index 2
@@ -1094,12 +1094,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							allSuchThat(new Attributes()
-									.add("role", "PaperProvider")),
+							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							me())
+							allSuchThat(new Attributes()
+									.add("role", "PaperProvider")))
 						))))
 		.add(
 			new Policy( // index 2
@@ -1196,12 +1196,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							requester(),
+							allSuchThat(new Attributes()
+									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							allSuchThat(new Attributes()
-									.add("role", "PrinterProvider")))
+							requester())
 						))))
 		.add(
 			new Policy( // index 2
@@ -1289,12 +1289,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							requester(),
+							anySuchThat(new Attributes()
+									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							anySuchThat(new Attributes()
-									.add("role", "PrinterProvider")))
+							requester())
 						))))
 		.add(
 			new Policy( // index 2
@@ -1376,12 +1376,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							requester(),
+							anySuchThat(new Attributes()
+									.add("role", "InkProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							anySuchThat(new Attributes()
-									.add("role", "InkProvider")))
+							requester())
 						))))
 		.add(
 			new Policy( // index 2
@@ -1437,12 +1437,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							anySuchThat(new Attributes()
-									.add("role", "InkProvider")),
+							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							me())
+							anySuchThat(new Attributes()
+									.add("role", "InkProvider")))
 						))))
 		.add(
 			new Policy( // index 2
@@ -1494,12 +1494,12 @@ class SemanticsTest {
 						new Attributes()
 							.add("resource/type", "printer"),
 						new SingleExchange(
-							anySuchThat(new Attributes()
-									.add("role", "PrinterProvider")),
+							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
-							me())
+							anySuchThat(new Attributes()
+									.add("role", "PrinterProvider")))
 						))))
 		.add(
 			new Policy( // index 2
@@ -1553,12 +1553,12 @@ class SemanticsTest {
 							.add("resource/type", "printer"),
 						new SingleExchange(
 							allSuchThat(new Attributes()
-									.add("role", "PaperProvider")),
+									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
 							new Attributes(),
 							allSuchThat(new Attributes()
-									.add("role", "PrinterProvider")))
+									.add("role", "PaperProvider")))
 						))))
 		.add(
 			new Policy( // index 2

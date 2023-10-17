@@ -60,19 +60,19 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new OrExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Pistoia"),
 								new Attributes(),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes(),
-								me())
+								requester())
 						)
 					))));
 		assertPolicies("""
@@ -139,13 +139,13 @@ class CouriersExampleTest {
 							attributes -> !attributes.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -159,21 +159,21 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new OrExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Pistoia"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								requester())
 						)
 					))));
 		assertPolicies("""
@@ -248,13 +248,13 @@ class CouriersExampleTest {
 							c -> !c.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -268,25 +268,25 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new AndExchange(
 							new SingleExchange(
-								anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
-							new SingleExchange(
 								anySuchThat(new Attributes()
-										.add("service", "delivery")
-										.add("company", "RabbitService")),
+									.add("service", "delivery")
+									.add("company", "RabbitService"))),
+							new SingleExchange(
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Grosseto"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")))
 						)
 					))))
 		.add(
@@ -385,13 +385,13 @@ class CouriersExampleTest {
 							c -> !c.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -405,25 +405,25 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new AndExchange(
 							new SingleExchange(
-								anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
-							new SingleExchange(
 								anySuchThat(new Attributes()
-										.add("service", "delivery")
-										.add("company", "RabbitService")),
+									.add("service", "delivery")
+									.add("company", "RabbitService"))),
+							new SingleExchange(
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Grosseto"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")))
 						)))
 					.add(new Rule(
 						new Attributes()
@@ -437,15 +437,15 @@ class CouriersExampleTest {
 							},
 							"timeHour > 7 and timeHour < 20 and position = Firenze"),
 						new SingleExchange(
-							anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Pisa"),
 							new Attributes()
 								.add("affiliation", "FastAndFurious"),
-							me())
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")))
 						))
 				))
 		.add(
@@ -464,15 +464,15 @@ class CouriersExampleTest {
 							.add("type", "addrInfo")
 							.add("city", "Pisa"),
 						new SingleExchange(
-							requester(),
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Firenze"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")))
+							requester())
 					))
 				));
 		// don't assert policies for simplicity and readability

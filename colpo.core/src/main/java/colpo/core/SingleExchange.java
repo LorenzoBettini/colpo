@@ -14,7 +14,7 @@ public class SingleExchange
 	private Attributes credentials;
 	private Participant to;
 
-	public SingleExchange(Participant from, Attributes resource, Attributes credentials, Participant to) {
+	public SingleExchange(Participant to, Attributes resource, Attributes credentials, Participant from) {
 		this.from = from;
 		this.resource = resource;
 		this.credentials = credentials;
