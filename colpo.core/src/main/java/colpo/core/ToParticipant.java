@@ -5,7 +5,7 @@ package colpo.core;
  * 
  * @author Lorenzo Bettini
  */
-public interface ToParticipant extends ParticipantInterface {
+public interface ToParticipant extends Participant {
 
 	default boolean isMe() {
 		return false;

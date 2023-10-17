@@ -1,6 +1,6 @@
 package colpo.core;
 
-import static colpo.core.Participant.*;
+import static colpo.core.Participants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

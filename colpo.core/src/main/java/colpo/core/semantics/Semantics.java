@@ -1,6 +1,6 @@
 package colpo.core.semantics;
 
-import static colpo.core.Participant.index;
+import static colpo.core.Participants.index;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +21,7 @@ import colpo.core.Exchange;
 import colpo.core.FromParticipant;
 import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
-import colpo.core.ParticipantInterface;
+import colpo.core.Participant;
 import colpo.core.Policies;
 import colpo.core.Policies.PolicyData;
 import colpo.core.Policy;
@@ -86,8 +86,8 @@ public class Semantics {
 		return result;
 	}
 
-	private Collection<PolicyData> policiesToEvaluate(ParticipantInterface requester,
-			ParticipantInterface from) {
+	private Collection<PolicyData> policiesToEvaluate(Participant requester,
+			Participant from) {
 		return policies.getPolicyData()
 			.filter(d -> d.index() != requester.getIndex())
 			.filter(d -> {

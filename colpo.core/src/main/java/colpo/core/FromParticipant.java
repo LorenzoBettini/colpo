@@ -5,7 +5,7 @@ package colpo.core;
  * 
  * @author Lorenzo Bettini
  */
-public interface FromParticipant extends ParticipantInterface {
+public interface FromParticipant extends Participant {
 
 	default boolean isRequester() {
 		return false;

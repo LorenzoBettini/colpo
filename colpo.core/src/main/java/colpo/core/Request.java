@@ -22,6 +22,6 @@ public record Request(IndexParticipant requester, Attributes resource, Attribute
 	 */
 	public Request withFrom(int participantIndex) {
 		return new Request(requester, resource, credentials,
-			Participant.index(participantIndex));
+			Participants.index(participantIndex));
 	}
 }
