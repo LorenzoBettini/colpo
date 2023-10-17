@@ -6,7 +6,7 @@ package colpo.core;
 /**
  * @author Lorenzo Bettini
  */
-public record SingleExchange(Participant to, Attributes resource, Attributes credentials, Participant from)
+public record SingleExchange(ToParticipant to, Attributes resource, Attributes credentials, FromParticipant from)
 		implements Exchange {
 
 	@Override

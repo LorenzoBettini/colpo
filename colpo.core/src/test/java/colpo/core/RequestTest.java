@@ -19,7 +19,7 @@ class RequestTest {
 		// this is fine, it checks indexes only if the first one is > 0
 		new Request(index(0), null, null, index(1));
 		// this is invalid
-		Participant sameIndex = index(1);
+		var sameIndex = index(1);
 		assertThatThrownBy(() -> new Request(sameIndex, null, null, sameIndex))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("requester and from are the same: 1");

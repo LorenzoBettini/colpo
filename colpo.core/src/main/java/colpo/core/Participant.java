@@ -1,109 +1,52 @@
 package colpo.core;
 
-import java.util.Objects;
+import colpo.core.QuantifiedParticipant.Quantifier;
 
 /**
  * @author Lorenzo Bettini
  */
 public class Participant {
 
-	private int index = -1;
-	private Quantifier quantifier = Quantifier.UNSET;
-	private Special special = Special.NOT_SPECIAL;
-	private Attributes attributes;
+	private static final Attributes EMPTY = new Attributes();
 
-	public enum Quantifier {
-		UNSET, ANY, ALL
+	public static IndexParticipant index(int index) {
+		return new IndexParticipant(index);
 	}
 
-	public enum Special {
-		NOT_SPECIAL, ME, REQUESTER
+	public static MeParticipant me() {
+		return new MeParticipant() {
+			@Override
+			public Attributes getAttributes() {
+				return EMPTY;
+			}
+
+			@Override
+			public String toString() {
+				return "ME";
+			}
+		};
 	}
 
-	private Participant(int index) {
-		this.index = index;
+	public static RequesterParticipant requester() {
+		return new RequesterParticipant() {
+			@Override
+			public Attributes getAttributes() {
+				return EMPTY;
+			}
+
+			@Override
+			public String toString() {
+				return "REQUESTER";
+			}
+		};
 	}
 
-	private Participant(Special special) {
-		this.special = special;
+	public static QuantifiedParticipant anySuchThat(Attributes attributes) {
+		return new QuantifiedParticipant(Quantifier.ANY, attributes);
 	}
 
-	private Participant(Quantifier quantifier, Attributes attributes) {
-		this.quantifier = quantifier;
-		this.attributes = attributes;
+	public static QuantifiedParticipant allSuchThat(Attributes attributes) {
+		return new QuantifiedParticipant(Quantifier.ALL, attributes);
 	}
 
-	public static Participant index(int index) {
-		return new Participant(index);
-	}
-
-	public static Participant me() {
-		return new Participant(Special.ME);
-	}
-
-	public static Participant requester() {
-		return new Participant(Special.REQUESTER);
-	}
-
-	public static Participant anySuchThat(Attributes attributes) {
-		return new Participant(Quantifier.ANY, attributes);
-	}
-
-	public static Participant allSuchThat(Attributes attributes) {
-		return new Participant(Quantifier.ALL, attributes);
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public Quantifier getQuantifier() {
-		return quantifier;
-	}
-
-	public boolean isAll() {
-		return quantifier == Quantifier.ALL;
-	}
-
-	public Attributes getAttributes() {
-		return attributes;
-	}
-
-	public boolean isMe() {
-		return special == Special.ME;
-	}
-
-	public boolean isRequester() {
-		return special == Special.REQUESTER;
-	}
-
-	@Override
-	public String toString() {
-		if (index > 0)
-			return "" + index;
-		if (special != Special.NOT_SPECIAL)
-			return special.toString();
-		return String.format("%s: %s",
-			(quantifier == Quantifier.ANY ? "anySuchThat" : "allSuchThat"),
-			attributes
-		);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(attributes, index, quantifier, special);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Participant other = (Participant) obj;
-		return Objects.equals(attributes, other.attributes) && index == other.index && quantifier == other.quantifier
-				&& special == other.special;
-	}
 }
