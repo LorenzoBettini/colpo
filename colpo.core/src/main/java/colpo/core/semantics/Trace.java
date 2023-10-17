@@ -30,4 +30,20 @@ public class Trace {
 		builder = new StringBuilder();
 		indent = 0;
 	}
+
+	public void addAndThenIndent(String string) {
+		add(string);
+		addIndent();
+	}
+
+	public void addInPreviousIndent(String string) {
+		removeIndent();
+		add(string);
+		addIndent();
+	}
+
+	public void removeIndentAndThenAdd(String string) {
+		removeIndent();
+		add(string);
+	}
 }
