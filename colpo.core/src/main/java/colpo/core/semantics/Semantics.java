@@ -203,6 +203,9 @@ public class Semantics {
 			trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
 			return true; // there's no one to satisfy
 		}
+		// this check would be implied by the later
+		// atLeastOneRequest.hasBeenGenerated for from: allSuchThat
+		// but this way we can give a more informative message
 		if (fromIndexes.isEmpty()) {
 			trace.add(String.format("%s: not satisfied: no one from exchange", traceForRule(policyIndex, ruleIndex)));
 			return false; // no one can satisfy
