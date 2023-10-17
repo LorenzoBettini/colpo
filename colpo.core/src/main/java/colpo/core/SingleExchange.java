@@ -6,8 +6,41 @@ package colpo.core;
 /**
  * @author Lorenzo Bettini
  */
-public record SingleExchange(Participant from, Attributes resource, Attributes credentials, Participant to)
+public class SingleExchange
 		implements Exchange {
+
+	private Participant from;
+	private Attributes resource;
+	private Attributes credentials;
+	private Participant to;
+
+	public SingleExchange(Participant from, Attributes resource, Attributes credentials, Participant to) {
+		this.from = from;
+		this.resource = resource;
+		this.credentials = credentials;
+		this.to = to;
+	}
+
+	
+	public Participant from() {
+		return from;
+	}
+
+
+	public Attributes resource() {
+		return resource;
+	}
+
+
+	public Attributes credentials() {
+		return credentials;
+	}
+
+
+	public Participant to() {
+		return to;
+	}
+
 
 	@Override
 	public String toString() {
