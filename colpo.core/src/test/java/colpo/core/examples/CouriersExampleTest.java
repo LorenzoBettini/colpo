@@ -60,25 +60,22 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new OrExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Pistoia"),
 								new Attributes(),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes(),
-								me())
+								requester())
 						)
 					))));
-		assertPolicies("""
-		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=true]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME])]]
-		""");
+
 		assertResultTrue(
 			new Request(
 				index(1), // RabbitService
@@ -97,14 +94,14 @@ class CouriersExampleTest {
 			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[], from=2]
 			    rule 2.1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 2.1: condition true -> true
-			    rule 2.1: evaluating OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME])
-			      rule 2.1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], to=ME]
+			    rule 2.1: evaluating OR(Exchange[to=ME, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=REQUESTER])
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=REQUESTER]
 			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=1]
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[], from=1]
 			          rule 1.1: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
 			      result: false
 			    rule 2.1: OR
-			      rule 2.1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[], to=ME]
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=REQUESTER]
 			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=1]
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[], from=1]
 			          rule 1.1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
@@ -139,13 +136,13 @@ class CouriersExampleTest {
 							attributes -> !attributes.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -159,26 +156,26 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new OrExchange(
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Pistoia"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
+								requester()),
 							new SingleExchange(
-								requester(),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								requester())
 						)
 					))));
 		assertPolicies("""
-		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME])]]
+		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=REQUESTER]]]
+		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=OR(Exchange[to=ME, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER], Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER])]]
 		""");
 		assertResultTrue(
 			new Request(
@@ -199,8 +196,8 @@ class CouriersExampleTest {
 			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 2.1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 2.1: condition true -> true
-			    rule 2.1: evaluating OR(Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME])
-			      rule 2.1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			    rule 2.1: evaluating OR(Exchange[to=ME, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER], Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER])
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER]
 			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pistoia)], credentials=[(affiliation : FastAndFurious)], from=1]
 			          rule 1.1: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
@@ -208,7 +205,7 @@ class CouriersExampleTest {
 			          rule 1.2: resource match([(type : addrInfo), (city : Pistoia)], [(type : addrInfo), (city : Lucca)]) -> false
 			      result: false
 			    rule 2.1: OR
-			      rule 2.1: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=REQUESTER]
 			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			          rule 1.1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
@@ -216,7 +213,7 @@ class CouriersExampleTest {
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition affiliation != RabbitService -> true
-			          rule 1.2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
+			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=REQUESTER]
 			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			      result: true
 			    rule 2.1: END Exchange -> true
@@ -248,13 +245,13 @@ class CouriersExampleTest {
 							c -> !c.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -268,25 +265,25 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new AndExchange(
 							new SingleExchange(
-								anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
-							new SingleExchange(
 								anySuchThat(new Attributes()
-										.add("service", "delivery")
-										.add("company", "RabbitService")),
+									.add("service", "delivery")
+									.add("company", "RabbitService"))),
+							new SingleExchange(
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Grosseto"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")))
 						)
 					))))
 		.add(
@@ -301,8 +298,8 @@ class CouriersExampleTest {
 							.add("city", "Grosseto")
 					))));
 		assertPolicies("""
-		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]]]
-		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=AND(Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME])]]
+		1 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Lucca)], condition=affiliation = RabbitService, resource=[(type : addrInfo), (city : Lucca)], condition=affiliation != RabbitService, exchange=Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=REQUESTER]]]
+		2 = Policy[party=[(service : delivery), (company : FastAndFurious)], rules=[resource=[(type : addrInfo), (city : Prato)], condition=true, exchange=AND(Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]], Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]])]]
 		3 = Policy[party=[(service : delivery), (company : RabbitService)], rules=[resource=[(type : addrInfo), (city : Grosseto)], condition=true]]
 		""");
 		assertResultTrue(
@@ -325,8 +322,8 @@ class CouriersExampleTest {
 			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 2.1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
 			    rule 2.1: condition true -> true
-			    rule 2.1: evaluating AND(Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME], Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME])
-			      rule 2.1: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			    rule 2.1: evaluating AND(Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]], Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]])
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
 			      policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			      policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
 			      policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
@@ -337,11 +334,11 @@ class CouriersExampleTest {
 			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], credentials=[(affiliation : FastAndFurious)], from=1]
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition affiliation != RabbitService -> true
-			          rule 1.2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], to=ME]
+			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=REQUESTER]
 			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], credentials=[(affiliation : RabbitService)], from=2]
 			      result: true
 			    rule 2.1: AND
-			      rule 2.1: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
 			      policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			      policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
 			      policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
@@ -385,13 +382,13 @@ class CouriersExampleTest {
 							c -> !c.name("affiliation").equals("RabbitService"),
 							"affiliation != RabbitService"),
 						new SingleExchange(
-							requester(),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Prato"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							me())))
+							requester())))
 					))
 		.add(
 			new Policy( // index 2
@@ -405,25 +402,25 @@ class CouriersExampleTest {
 							.add("city", "Prato"),
 						new AndExchange(
 							new SingleExchange(
-								anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Lucca"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me()),
-							new SingleExchange(
 								anySuchThat(new Attributes()
-										.add("service", "delivery")
-										.add("company", "RabbitService")),
+									.add("service", "delivery")
+									.add("company", "RabbitService"))),
+							new SingleExchange(
+								me(),
 								new Attributes()
 									.add("type", "addrInfo")
 									.add("city", "Grosseto"),
 								new Attributes()
 									.add("affiliation", "FastAndFurious"),
-								me())
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")))
 						)))
 					.add(new Rule(
 						new Attributes()
@@ -437,15 +434,15 @@ class CouriersExampleTest {
 							},
 							"timeHour > 7 and timeHour < 20 and position = Firenze"),
 						new SingleExchange(
-							anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")),
+							me(),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Pisa"),
 							new Attributes()
 								.add("affiliation", "FastAndFurious"),
-							me())
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")))
 						))
 				))
 		.add(
@@ -464,15 +461,15 @@ class CouriersExampleTest {
 							.add("type", "addrInfo")
 							.add("city", "Pisa"),
 						new SingleExchange(
-							requester(),
+							anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService")),
 							new Attributes()
 								.add("type", "addrInfo")
 								.add("city", "Firenze"),
 							new Attributes()
 								.add("affiliation", "RabbitService"),
-							anySuchThat(new Attributes()
-									.add("service", "delivery")
-									.add("company", "RabbitService")))
+							requester())
 					))
 				));
 		// don't assert policies for simplicity and readability
@@ -507,7 +504,7 @@ class CouriersExampleTest {
 			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=2]
 			    rule 2.2: resource match([(type : addrInfo), (city : Firenze)], [(type : addrInfo), (city : Firenze)]) -> true
 			    rule 2.2: condition timeHour > 7 and timeHour < 20 and position = Firenze -> true
-			    rule 2.2: evaluating Exchange[from=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], to=ME]
+			    rule 2.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
 			    policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			    policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
 			    policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
@@ -523,7 +520,7 @@ class CouriersExampleTest {
 			      policy 3: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], credentials=[(affiliation : FastAndFurious)], from=3]
 			        rule 3.2: resource match([(type : addrInfo), (city : Pisa)], [(type : addrInfo), (city : Pisa)]) -> true
 			        rule 3.2: condition true -> true
-			        rule 3.2: evaluating Exchange[from=REQUESTER, resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], to=anySuchThat: [(service : delivery), (company : RabbitService)]]
+			        rule 3.2: evaluating Exchange[to=anySuchThat: [(service : delivery), (company : RabbitService)], resource=[(type : addrInfo), (city : Firenze)], credentials=[(affiliation : RabbitService)], from=REQUESTER]
 			        policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
 			        policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
 			        policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
