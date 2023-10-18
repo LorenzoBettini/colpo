@@ -9,6 +9,10 @@ public class Participants {
 
 	private static final Attributes EMPTY_ATTRIBUTES = new Attributes();
 
+	private Participants() {
+		// Only static methods
+	}
+
 	private static final MeParticipant ME = new MeParticipant() {
 		@Override
 		public Attributes getAttributes() {
