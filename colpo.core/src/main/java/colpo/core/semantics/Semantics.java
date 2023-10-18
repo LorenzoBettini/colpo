@@ -292,16 +292,21 @@ public class Semantics {
 			exchange.resource(),
 			exchange.credentials(),
 			exchangeRequestFrom);
-		boolean result = true;
-		if (requestComply != null &&
-				requests.stream()
+		boolean result = false;
+		if (requestComply != null) {
+			if (requests.stream()
 					.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
-			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-		} else if (requests.contains(exchangeRequest)) {
-			trace.add(String.format("%s: already found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
+				trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
+				result = true;
+			}
 		} else {
-			result = evaluate(exchangeRequest, requests);
+			if (requests.contains(exchangeRequest)) {
+				trace.add(String.format("%s: already found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
+				result = true;
+			}
 		}
+		if (!result)
+			result = evaluate(exchangeRequest, requests);
 		return result;
 	}
 
