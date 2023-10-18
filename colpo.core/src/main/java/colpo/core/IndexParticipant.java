@@ -3,7 +3,7 @@ package colpo.core;
 /**
  * @author Lorenzo Bettini
  */
-public record IndexParticipant(int index) implements FromParticipant, ToParticipant {
+public record IndexParticipant(int index) implements RequestFromParticipant, ExchangeToParticipant {
 
 	@Override
 	public int getIndex() {

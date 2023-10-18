@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * @author Lorenzo Bettini
  */
-public class QuantifiedParticipant implements FromParticipant, ToParticipant  {
+public class QuantifiedParticipant implements RequestFromParticipant, ExchangeToParticipant, ExchangeFromParticipant {
 
 	private Quantifier quantifier = Quantifier.UNSET;
 	private Attributes attributes;

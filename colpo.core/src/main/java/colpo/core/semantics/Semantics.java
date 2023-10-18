@@ -18,7 +18,7 @@ import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
 import colpo.core.Exchange;
-import colpo.core.FromParticipant;
+import colpo.core.RequestFromParticipant;
 import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -278,7 +278,7 @@ public class Semantics {
 			int ruleIndex,
 			SingleExchange exchange,
 			IndexParticipant exchangeRequestRequester,
-			FromParticipant exchangeRequestFrom,
+			RequestFromParticipant exchangeRequestFrom,
 			Set<Request> requests) {
 		var exchangeRequest = new Request(
 			exchangeRequestRequester,

@@ -1,6 +1,6 @@
 package colpo.core;
 
-public interface MeParticipant extends ToParticipant {
+public interface MeParticipant extends ExchangeToParticipant {
 
 	@Override
 	default boolean isMe() {
