@@ -18,6 +18,12 @@
 		<junit-jupiter.version>5.9.0</junit-jupiter.version>
 		<mockito.version>4.8.0</mockito.version>
 		<assertj.version>3.23.1</assertj.version>
+
+		<sonar.coverage.exclusions>
+			**/Attributes.*,
+			**/Participant.*,
+			**/QuantifiedParticipant.*
+		</sonar.coverage.exclusions>
 	</properties>
 
 	<dependencyManagement>
@@ -121,7 +127,9 @@
 					<version>0.8.11</version>
 					<configuration>
 						<excludes>
-							<exclude>**/Main.*</exclude>
+							<exclude>**/Attributes.*</exclude>
+							<exclude>**/Participant.*</exclude>
+							<exclude>**/QuantifiedParticipant.*</exclude>
 						</excludes>
 					</configuration>
 					<executions>
