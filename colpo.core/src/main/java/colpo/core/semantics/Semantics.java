@@ -1,6 +1,6 @@
 package colpo.core.semantics;
 
-import static colpo.core.Participant.index;
+import static colpo.core.Participants.index;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,9 +18,10 @@ import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
 import colpo.core.Exchange;
+import colpo.core.RequestFromParticipant;
+import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
-import colpo.core.Participant.Quantifier;
 import colpo.core.Policies;
 import colpo.core.Policies.PolicyData;
 import colpo.core.Policy;
@@ -72,12 +73,12 @@ public class Semantics {
 				Predicate<PolicyData> evaluatePredicate =
 						d -> evaluate(d.index(), d.policy(),
 								request.withFrom(d.index()), requests);
-				if (from.getQuantifier() == Quantifier.ANY) {
-					result = policiesToEvaluate.stream()
-						.anyMatch(evaluatePredicate);
-				} else {
+				if (from.isAll()) {
 					result = policiesToEvaluate.stream()
 						.allMatch(evaluatePredicate);
+				} else {
+					result = policiesToEvaluate.stream()
+						.anyMatch(evaluatePredicate);
 				}
 			}
 		}
@@ -273,8 +274,12 @@ public class Semantics {
 				.toList();
 	}
 
-	private boolean evaluateExchangeRequest(int policyIndex, int ruleIndex, SingleExchange exchange,
-			Participant exchangeRequestRequester, Participant exchangeRequestFrom, Set<Request> requests) {
+	private boolean evaluateExchangeRequest(int policyIndex,
+			int ruleIndex,
+			SingleExchange exchange,
+			IndexParticipant exchangeRequestRequester,
+			RequestFromParticipant exchangeRequestFrom,
+			Set<Request> requests) {
 		var exchangeRequest = new Request(
 			exchangeRequestRequester,
 			exchange.resource(),

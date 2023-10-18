@@ -1,9 +1,9 @@
 package colpo.core.examples;
 
-import static colpo.core.Participant.anySuchThat;
-import static colpo.core.Participant.index;
-import static colpo.core.Participant.me;
-import static colpo.core.Participant.requester;
+import static colpo.core.Participants.anySuchThat;
+import static colpo.core.Participants.index;
+import static colpo.core.Participants.me;
+import static colpo.core.Participants.requester;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
