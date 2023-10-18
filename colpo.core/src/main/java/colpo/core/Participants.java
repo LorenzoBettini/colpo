@@ -7,18 +7,11 @@ import colpo.core.QuantifiedParticipant.Quantifier;
  */
 public class Participants {
 
-	private static final Attributes EMPTY_ATTRIBUTES = new Attributes();
-
 	private Participants() {
 		// Only static methods
 	}
 
 	private static final MeParticipant ME = new MeParticipant() {
-		@Override
-		public Attributes getAttributes() {
-			return EMPTY_ATTRIBUTES;
-		}
-
 		@Override
 		public String toString() {
 			return "ME";
@@ -26,11 +19,6 @@ public class Participants {
 	};
 
 	private static final RequesterParticipant REQUESTER = new RequesterParticipant() {
-		@Override
-		public Attributes getAttributes() {
-			return EMPTY_ATTRIBUTES;
-		}
-
 		@Override
 		public String toString() {
 			return "REQUESTER";

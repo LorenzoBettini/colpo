@@ -7,8 +7,6 @@ public class IndexParticipant implements FromParticipant, ToParticipant {
 
 	private int index = -1;
 
-	private static final Attributes EMPTY = new Attributes();
-
 	public IndexParticipant(int index) {
 		this.index = index;
 	}
@@ -21,11 +19,6 @@ public class IndexParticipant implements FromParticipant, ToParticipant {
 	@Override
 	public boolean isAll() {
 		return false;
-	}
-
-	@Override
-	public Attributes getAttributes() {
-		return EMPTY;
 	}
 
 	@Override
