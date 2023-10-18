@@ -29,6 +29,7 @@ public class QuantifiedParticipant implements FromParticipant, ToParticipant  {
 		return quantifier == Quantifier.ALL;
 	}
 
+	@Override
 	public Attributes getAttributes() {
 		return attributes;
 	}
