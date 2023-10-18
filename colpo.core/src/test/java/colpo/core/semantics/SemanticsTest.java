@@ -659,6 +659,162 @@ class SemanticsTest {
 	}
 
 	@Test
+	void mutualExchangeWithCustomRequestComply() {
+		// the custom comply predicate just checks that the requester and from are the
+		// same in the existing requests
+		// Alice gives printer provided the requester gives paper to me
+		// Bob gives paper provided the requester gives ink
+		// Carl gives paper provided the requester gives printer
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice")
+					.add("role", "PrinterProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "printer"),
+						new SingleExchange(
+							me(),
+							new Attributes()
+								.add("resource/type", "paper"),
+							new Attributes(),
+							requester())))))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper"),
+						new SingleExchange(
+								me(),
+								new Attributes()
+									.add("resource/type", "ink"),
+								new Attributes(),
+								requester())))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl")
+					.add("role", "PaperProvider"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("resource/type", "paper"),
+						new SingleExchange(
+								me(),
+								new Attributes()
+									.add("resource/type", "printer"),
+								new Attributes(),
+								requester())))));
+
+		// as long as a request is found with the same requester and from
+		// then we consider the exchange succeeds
+		semantics.requestComply((newRequest, existingRequest) -> 
+			newRequest.requester().equals(existingRequest.requester())
+			&& newRequest.from().equals(existingRequest.from())
+		);
+
+		// though Bob provides ink instead of paper, the custom compliant predicate
+		// above makes the exchange succeed
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1.1: condition true -> true
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 2.1: condition true -> true
+			        rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
+			        rule 2.1: compliant request found Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			    result: true
+			result: true
+			"""
+		);
+		assertResultTrue(
+			new Request(
+				index(3), // Carl
+				new Attributes()
+					.add("resource/type", "printer"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PrinterProvider"))
+			),
+			"""
+			evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			  finding matching policies
+			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
+			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
+			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			    rule 1.1: condition true -> true
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			        rule 3.1: condition true -> true
+			        rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
+			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			    result: true
+			result: true
+			"""
+		);
+		assertResultTrue(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("resource/type", "paper"),
+				new Attributes(),
+				anySuchThat(new Attributes()
+					.add("role", "PaperProvider"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]
+			  finding matching policies
+			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
+			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
+			  policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			    rule 2.1: condition true -> true
+			    rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
+			    evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			      policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			        rule 1.1: resource match([(resource/type : ink)], [(resource/type : printer)]) -> false
+			    result: false
+			  policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
+			    rule 3.1: condition true -> true
+			    rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
+			    evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			      policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			        rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
+			        rule 1.1: condition true -> true
+			        rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    result: true
+			result: true
+			"""
+		);
+	}
+
+	@Test
 	void orExchange() {
 		// Alice gives printer provided the requester gives white paper or yellow paper
 		// Bob gives white paper
