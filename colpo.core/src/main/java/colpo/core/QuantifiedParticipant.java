@@ -24,6 +24,7 @@ public class QuantifiedParticipant implements FromParticipant, ToParticipant  {
 		return -1;
 	}
 
+	@Override
 	public boolean isAll() {
 		return quantifier == Quantifier.ALL;
 	}
