@@ -331,6 +331,70 @@ class SemanticsTest {
 	}
 
 	@Test
+	void shouldUseRequesterPartyAttributes() {
+		// Carl only gives paper white to name Bob
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("name", "Alice"),
+				new Rules()))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("name", "Bob"),
+				new Rules()))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("name", "Carl"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("paper", "white"),
+						new ExpressionWithDescription(
+								c -> c.name("name").equals("Bob"),
+								"name = Bob"
+							)
+					))));
+		// Alice requests
+		// ( resource: (paper : white), from: 3)
+		assertResultFalse(
+			new Request(
+				index(1), // Alice
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(3)
+			),
+			"""
+			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
+			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 3.1: condition name = Bob -> false
+			result: false
+			"""
+		);
+		// Bob requests
+		// ( resource: (paper : white), from: 3)
+		assertResultTrue(
+			new Request(
+				index(2), // Bob
+				new Attributes()
+					.add("paper", "white"),
+				new Attributes(),
+				index(3)
+			),
+			"""
+			evaluating Request[requester=2, resource=[(paper : white)], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=2, resource=[(paper : white)], credentials=[], from=3]
+			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
+			    rule 3.1: condition name = Bob -> true
+			result: true
+			"""
+		);
+	}
+
+	@Test
 	void shouldCheckAnyAndAllSuchThat() {
 		policies.add(
 			new Policy( // index 1
