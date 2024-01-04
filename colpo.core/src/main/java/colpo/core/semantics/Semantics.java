@@ -131,7 +131,8 @@ public class Semantics {
 			result = rule.getCondition().evaluate(
 				name -> Stream.of(
 							request.resource(), request.credentials(),
-							contextHandler.ofParty(policyIndex))
+							contextHandler.ofParty(policyIndex),
+							policies.getByIndex(request.requester().index()).party())
 					.map(attributes -> attributes.name(name))
 					.filter(Objects::nonNull)
 					.findFirst()
