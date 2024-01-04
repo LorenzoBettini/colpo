@@ -70,12 +70,11 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				index(2)
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=2]
-			  policy 2: evaluating Request[requester=1, resource=[], credentials=[], from=2]
+			evaluating Request[requester=1, resource=[], from=2]
+			  policy 2: evaluating Request[requester=1, resource=[], from=2]
 			    rule 2.1: resource match([], []) -> true
 			    rule 2.1: condition true -> true
 			result: true
@@ -85,12 +84,11 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				index(3)
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=3]
-			  policy 3: evaluating Request[requester=1, resource=[], credentials=[], from=3]
+			evaluating Request[requester=1, resource=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[], from=3]
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
@@ -183,12 +181,11 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(2)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=2]
-			  policy 2: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=2]
+			evaluating Request[requester=1, resource=[(paper : white)], from=2]
+			  policy 2: evaluating Request[requester=1, resource=[(paper : white)], from=2]
 			    rule 2.1: resource match([(paper : white)], [(paper : black)]) -> false
 			result: false
 			"""
@@ -200,12 +197,11 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(3)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
-			  policy 3: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
+			evaluating Request[requester=1, resource=[(paper : white)], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[(paper : white)], from=3]
 			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 3.1: condition always false -> false
 			result: false
@@ -218,12 +214,11 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(4)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=4]
-			  policy 4: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=4]
+			evaluating Request[requester=1, resource=[(paper : white)], from=4]
+			  policy 4: evaluating Request[requester=1, resource=[(paper : white)], from=4]
 			    rule 4.1: resource match([(paper : white)], [(paper : white), (file/format : PDF)]) -> true
 			    rule 4.1: condition file/format = PDF -> Undefined name: file/format
 			result: false
@@ -237,12 +232,11 @@ class SemanticsTest {
 				new Attributes()
 					.add("paper", "white")
 					.add("file/format", "PDF"),
-				new Attributes(),
 				index(4)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white), (file/format : PDF)], credentials=[], from=4]
-			  policy 4: evaluating Request[requester=1, resource=[(paper : white), (file/format : PDF)], credentials=[], from=4]
+			evaluating Request[requester=1, resource=[(paper : white), (file/format : PDF)], from=4]
+			  policy 4: evaluating Request[requester=1, resource=[(paper : white), (file/format : PDF)], from=4]
 			    rule 4.1: resource match([(paper : white), (file/format : PDF)], [(paper : white), (file/format : PDF)]) -> true
 			    rule 4.1: condition file/format = PDF -> true
 			result: true
@@ -255,58 +249,18 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(5)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=5]
-			  policy 5: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=5]
+			evaluating Request[requester=1, resource=[(paper : white)], from=5]
+			  policy 5: evaluating Request[requester=1, resource=[(paper : white)], from=5]
 			    rule 5.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 5.1: condition job/role = writer -> Undefined name: job/role
 			result: false
 			"""
 		);
-		// Alice requests
-		// ( resource: (paper : white), credentials: (job/role : writer), from: 5)
-		assertResultTrue(
-			new Request(
-				index(1), // Alice
-				new Attributes()
-					.add("paper", "white"),
-				new Attributes()
-					.add("job/role", "writer"),
-				index(5)
-			),
-			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=5]
-			  policy 5: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=5]
-			    rule 5.1: resource match([(paper : white)], [(paper : white)]) -> true
-			    rule 5.1: condition job/role = writer -> true
-			result: true
-			"""
-		);
 
 		// TEST for ContextHandler
-
-		// Alice requests
-		// ( resource: (paper : white), credentials: (job/role : writer), from: 6)
-		assertResultFalse(
-			new Request(
-				index(1), // Alice
-				new Attributes()
-					.add("paper", "white"),
-				new Attributes()
-					.add("job/role", "writer"),
-				index(6)
-			),
-			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
-			  policy 6: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
-			    rule 6.1: resource match([(paper : white)], [(paper : white)]) -> true
-			    rule 6.1: condition current/city = Firenze -> Undefined name: current/city
-			result: false
-			"""
-		);
 
 		semantics.contextHandler(new ContextHandler()
 			.add(6, "current/city", "Firenze"));
@@ -316,13 +270,11 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes()
-					.add("job/role", "writer"),
 				index(6)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
-			  policy 6: evaluating Request[requester=1, resource=[(paper : white)], credentials=[(job/role : writer)], from=6]
+			evaluating Request[requester=1, resource=[(paper : white)], from=6]
+			  policy 6: evaluating Request[requester=1, resource=[(paper : white)], from=6]
 			    rule 6.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 6.1: condition current/city = Firenze -> true
 			result: true
@@ -363,12 +315,11 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(3)
 			),
 			"""
-			evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
-			  policy 3: evaluating Request[requester=1, resource=[(paper : white)], credentials=[], from=3]
+			evaluating Request[requester=1, resource=[(paper : white)], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[(paper : white)], from=3]
 			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 3.1: condition name = Bob -> false
 			result: false
@@ -381,12 +332,11 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("paper", "white"),
-				new Attributes(),
 				index(3)
 			),
 			"""
-			evaluating Request[requester=2, resource=[(paper : white)], credentials=[], from=3]
-			  policy 3: evaluating Request[requester=2, resource=[(paper : white)], credentials=[], from=3]
+			evaluating Request[requester=2, resource=[(paper : white)], from=3]
+			  policy 3: evaluating Request[requester=2, resource=[(paper : white)], from=3]
 			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 3.1: condition name = Bob -> true
 			result: true
@@ -426,16 +376,15 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=anySuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[], from=anySuchThat: [(name : Bob)]]
 			  finding matching policies
 			    policy 2: from match([(name : Bob)], [(role : Provider)]) -> false
 			    policy 3: from match([(name : Bob)], [(name : Bob), (role : Provider)]) -> true
-			  policy 3: evaluating Request[requester=1, resource=[], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[], from=3]
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
@@ -449,19 +398,18 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("role", "Provider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(role : Provider)]]
+			evaluating Request[requester=1, resource=[], from=allSuchThat: [(role : Provider)]]
 			  finding matching policies
 			    policy 2: from match([(role : Provider)], [(role : Provider)]) -> true
 			    policy 3: from match([(role : Provider)], [(name : Bob), (role : Provider)]) -> true
-			  policy 2: evaluating Request[requester=1, resource=[], credentials=[], from=2]
+			  policy 2: evaluating Request[requester=1, resource=[], from=2]
 			    rule 2.1: resource match([], []) -> true
 			    rule 2.1: condition true -> true
-			  policy 3: evaluating Request[requester=1, resource=[], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[], from=3]
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
@@ -474,16 +422,15 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Bob"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Bob)]]
+			evaluating Request[requester=1, resource=[], from=allSuchThat: [(name : Bob)]]
 			  finding matching policies
 			    policy 2: from match([(name : Bob)], [(role : Provider)]) -> false
 			    policy 3: from match([(name : Bob)], [(name : Bob), (role : Provider)]) -> true
-			  policy 3: evaluating Request[requester=1, resource=[], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[], from=3]
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
@@ -496,12 +443,11 @@ class SemanticsTest {
 			new Request(
 				index(1), // Alice
 				new Attributes(),
-				new Attributes(),
 				allSuchThat(new Attributes()
 					.add("name", "Carl"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[], credentials=[], from=allSuchThat: [(name : Carl)]]
+			evaluating Request[requester=1, resource=[], from=allSuchThat: [(name : Carl)]]
 			  finding matching policies
 			    policy 2: from match([(name : Carl)], [(role : Provider)]) -> false
 			    policy 3: from match([(name : Carl)], [(name : Bob), (role : Provider)]) -> false
@@ -527,7 +473,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())))))
 		.add(
 			new Policy( // index 2
@@ -540,7 +485,7 @@ class SemanticsTest {
 							.add("resource/type", "paper")
 					))));
 		assertPolicies("""
-			1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]]]
+			1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]]]
 			2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
 			""");
 		assertResultTrue(
@@ -548,20 +493,19 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
@@ -588,7 +532,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())))))
 		.add(
 			new Policy( // index 2
@@ -603,7 +546,6 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("resource/type", "ink"),
-								new Attributes(),
 								requester())))))
 		.add(
 			new Policy( // index 3
@@ -618,38 +560,36 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("resource/type", "printer"),
-								new Attributes(),
 								requester())))));
 		assertPolicies("""
-		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]]]
-		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]]]
-		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]]]
+		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]]]
+		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : ink)], from=REQUESTER]]]
+		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : printer)], from=REQUESTER]]]
 			""");
 		assertResultFalse(
 			new Request(
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
-			        rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
-			        evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
-			          policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			        rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], from=REQUESTER]
+			        evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
+			          policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
 			            rule 1.1: resource match([(resource/type : ink)], [(resource/type : printer)]) -> false
 			        result: false
 			    result: false
@@ -661,25 +601,24 @@ class SemanticsTest {
 				index(3), // Carl
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=3, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 3.1: condition true -> true
-			        rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
-			        rule 3.1: already found Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			        rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], from=REQUESTER]
+			        rule 3.1: already found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
 			"""
@@ -689,33 +628,32 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource/type", "paper"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PaperProvider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]
+			evaluating Request[requester=1, resource=[(resource/type : paper)], from=anySuchThat: [(role : PaperProvider)]]
 			  finding matching policies
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
-			  policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			  policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			    rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			    rule 2.1: condition true -> true
-			    rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
-			      policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			    rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], from=REQUESTER]
+			    evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
+			      policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
 			        rule 1.1: resource match([(resource/type : ink)], [(resource/type : printer)]) -> false
 			    result: false
-			  policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			    rule 3.1: condition true -> true
-			    rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
-			      policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], from=REQUESTER]
+			    evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
+			      policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			        rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			        rule 1.1: condition true -> true
-			        rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			        rule 1.1: already found Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			        rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			        rule 1.1: already found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
 			"""
@@ -742,7 +680,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())))))
 		.add(
 			new Policy( // index 2
@@ -757,7 +694,6 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("resource/type", "ink"),
-								new Attributes(),
 								requester())))))
 		.add(
 			new Policy( // index 3
@@ -772,7 +708,6 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("resource/type", "printer"),
-								new Attributes(),
 								requester())))));
 
 		// as long as a request is found with the same requester and from
@@ -789,25 +724,24 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
-			        rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
-			        rule 2.1: compliant request found Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			        rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], from=REQUESTER]
+			        rule 2.1: compliant request found Request[requester=2, resource=[(resource/type : ink)], from=1]
 			    result: true
 			result: true
 			"""
@@ -817,25 +751,24 @@ class SemanticsTest {
 				index(3), // Carl
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=3, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 3.1: condition true -> true
-			        rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
-			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			        rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], from=REQUESTER]
+			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
 			"""
@@ -845,33 +778,32 @@ class SemanticsTest {
 				index(1), // Alice
 				new Attributes()
 					.add("resource/type", "paper"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PaperProvider"))
 			),
 			"""
-			evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]
+			evaluating Request[requester=1, resource=[(resource/type : paper)], from=anySuchThat: [(role : PaperProvider)]]
 			  finding matching policies
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
-			  policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			  policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			    rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			    rule 2.1: condition true -> true
-			    rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
-			      policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], credentials=[], from=1]
+			    rule 2.1: evaluating Exchange[to=ME, resource=[(resource/type : ink)], from=REQUESTER]
+			    evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
+			      policy 1: evaluating Request[requester=2, resource=[(resource/type : ink)], from=1]
 			        rule 1.1: resource match([(resource/type : ink)], [(resource/type : printer)]) -> false
 			    result: false
-			  policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			  policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			    rule 3.1: condition true -> true
-			    rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], credentials=[], from=REQUESTER]
-			    evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
-			      policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			    rule 3.1: evaluating Exchange[to=ME, resource=[(resource/type : printer)], from=REQUESTER]
+			    evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
+			      policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			        rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			        rule 1.1: condition true -> true
-			        rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			        rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
 			"""
@@ -898,13 +830,11 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("paper/color", "white"),
-								new Attributes(),
 								requester()),
 							new SingleExchange(
 								me(),
 								new Attributes()
 									.add("paper/color", "yellow"),
-								new Attributes(),
 								requester())
 						)))))
 		.add(
@@ -942,23 +872,22 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
-			        policy 2: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=2]
+			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(paper/color : white)], from=2]
 			          rule 2.1: resource match([(paper/color : white)], [(paper/color : white)]) -> true
 			          rule 2.1: condition true -> true
 			      result: true
@@ -971,29 +900,28 @@ class SemanticsTest {
 				index(3), // Carl
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=3, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
-			        policy 3: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=3]
+			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(paper/color : white)], from=3]
 			          rule 3.1: resource match([(paper/color : white)], [(paper/color : yellow)]) -> false
 			      result: false
 			    rule 1.1: OR
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : yellow)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
-			        policy 3: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=3]
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : yellow)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(paper/color : yellow)], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(paper/color : yellow)], from=3]
 			          rule 3.1: resource match([(paper/color : yellow)], [(paper/color : yellow)]) -> true
 			          rule 3.1: condition true -> true
 			      result: true
@@ -1006,29 +934,28 @@ class SemanticsTest {
 				index(4), // Ed
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=4, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
-			        policy 4: evaluating Request[requester=1, resource=[(paper/color : white)], credentials=[], from=4]
+			    rule 1.1: evaluating OR(Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER], Exchange[to=ME, resource=[(paper/color : yellow)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : white)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(paper/color : white)], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(paper/color : white)], from=4]
 			          rule 4.1: resource match([(paper/color : white)], [(paper/color : green)]) -> false
 			      result: false
 			    rule 1.1: OR
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : yellow)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
-			        policy 4: evaluating Request[requester=1, resource=[(paper/color : yellow)], credentials=[], from=4]
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : yellow)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(paper/color : yellow)], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(paper/color : yellow)], from=4]
 			          rule 4.1: resource match([(paper/color : yellow)], [(paper/color : green)]) -> false
 			      result: false
 			    rule 1.1: END Exchange -> false
@@ -1057,13 +984,11 @@ class SemanticsTest {
 								me(),
 								new Attributes()
 									.add("resource/type", "paper"),
-								new Attributes(),
 								requester()),
 							new SingleExchange(
 								me(),
 								new Attributes()
 									.add("color", "white"),
-								new Attributes(),
 								requester())
 						)))))
 		.add(
@@ -1102,30 +1027,29 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			        policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			          rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper), (color : white)]) -> true
 			          rule 2.1: condition true -> true
 			      result: true
 			    rule 1.1: AND
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(color : white)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
-			        policy 2: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=2]
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(color : white)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(color : white)], from=2]
+			        policy 2: evaluating Request[requester=1, resource=[(color : white)], from=2]
 			          rule 2.1: resource match([(color : white)], [(resource/type : paper), (color : white)]) -> true
 			          rule 2.1: condition true -> true
 			      result: true
@@ -1138,30 +1062,29 @@ class SemanticsTest {
 				index(3), // Carl
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=3, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			        policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			          rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			          rule 3.1: condition true -> true
 			      result: true
 			    rule 1.1: AND
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(color : white)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
-			        policy 3: evaluating Request[requester=1, resource=[(color : white)], credentials=[], from=3]
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(color : white)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(color : white)], from=3]
+			        policy 3: evaluating Request[requester=1, resource=[(color : white)], from=3]
 			          rule 3.1: resource match([(color : white)], [(resource/type : paper)]) -> false
 			      result: false
 			    rule 1.1: END Exchange -> false
@@ -1173,23 +1096,22 @@ class SemanticsTest {
 				index(4), // Ed
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=4, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=4, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], credentials=[], from=REQUESTER])
-			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
-			      evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
-			        policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
+			    rule 1.1: evaluating AND(Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER], Exchange[to=ME, resource=[(color : white)], from=REQUESTER])
+			      rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=REQUESTER]
+			      evaluating Request[requester=1, resource=[(resource/type : paper)], from=4]
+			        policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], from=4]
 			          rule 4.1: resource match([(resource/type : paper)], [(color : white)]) -> false
 			      result: false
 			    rule 1.1: END Exchange -> false
@@ -1217,7 +1139,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("paper/color", "green"),
-							new Attributes(),
 							anySuchThat(new Attributes()
 									.add("role", "PaperProvider")))
 						))))
@@ -1252,7 +1173,7 @@ class SemanticsTest {
 							.add("paper/color", "green")
 					))));
 		assertPolicies("""
-		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(paper/color : green)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]]]
+		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(paper/color : green)], from=anySuchThat: [(role : PaperProvider)]]]]
 		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(paper/color : white)], condition=true]]
 		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(paper/color : yellow)], condition=true]]
 		4 = Policy[party=[(name : Ed), (role : PaperProvider)], rules=[resource=[(paper/color : green)], condition=true]]
@@ -1262,34 +1183,33 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : green)], credentials=[], from=anySuchThat: [(role : PaperProvider)]]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(paper/color : green)], from=anySuchThat: [(role : PaperProvider)]]
 			    policy 1: from match([(role : PaperProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
 			    policy 4: from match([(role : PaperProvider)], [(name : Ed), (role : PaperProvider)]) -> true
-			    evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=2]
+			    evaluating Request[requester=1, resource=[(paper/color : green)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(paper/color : green)], from=2]
 			        rule 2.1: resource match([(paper/color : green)], [(paper/color : white)]) -> false
 			    result: false
-			    evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=3]
+			    evaluating Request[requester=1, resource=[(paper/color : green)], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(paper/color : green)], from=3]
 			        rule 3.1: resource match([(paper/color : green)], [(paper/color : yellow)]) -> false
 			    result: false
-			    evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=4]
-			      policy 4: evaluating Request[requester=1, resource=[(paper/color : green)], credentials=[], from=4]
+			    evaluating Request[requester=1, resource=[(paper/color : green)], from=4]
+			      policy 4: evaluating Request[requester=1, resource=[(paper/color : green)], from=4]
 			        rule 4.1: resource match([(paper/color : green)], [(paper/color : green)]) -> true
 			        rule 4.1: condition true -> true
 			    result: true
@@ -1317,7 +1237,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							allSuchThat(new Attributes()
 									.add("role", "PaperProvider")))
 						))))
@@ -1352,7 +1271,7 @@ class SemanticsTest {
 							.add("resource/type", "paper")
 					))));
 		assertPolicies("""
-		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=allSuchThat: [(role : PaperProvider)]]]]
+		1 = Policy[party=[(name : Alice), (role : PrinterProvider)], rules=[resource=[(resource/type : printer)], condition=true, exchange=Exchange[to=ME, resource=[(resource/type : paper)], from=allSuchThat: [(role : PaperProvider)]]]]
 		2 = Policy[party=[(name : Bob), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
 		3 = Policy[party=[(name : Carl), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
 		4 = Policy[party=[(name : Ed), (role : PaperProvider)], rules=[resource=[(resource/type : paper)], condition=true]]
@@ -1362,36 +1281,35 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PaperProvider)]) -> false
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=allSuchThat: [(role : PaperProvider)]]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=allSuchThat: [(role : PaperProvider)]]
 			    policy 1: from match([(role : PaperProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
 			    policy 4: from match([(role : PaperProvider)], [(name : Ed), (role : PaperProvider)]) -> true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 3.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
-			      policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=4]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=4]
+			      policy 4: evaluating Request[requester=1, resource=[(resource/type : paper)], from=4]
 			        rule 4.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 4.1: condition true -> true
 			    result: true
@@ -1420,7 +1338,6 @@ class SemanticsTest {
 									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())
 						))))
 		.add(
@@ -1455,31 +1372,30 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], from=REQUESTER]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=4, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=4, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
@@ -1508,7 +1424,6 @@ class SemanticsTest {
 									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())
 						))))
 		.add(
@@ -1543,26 +1458,25 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], from=REQUESTER]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
@@ -1590,7 +1504,6 @@ class SemanticsTest {
 									.add("role", "InkProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							requester())
 						))))
 		.add(
@@ -1609,18 +1522,17 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : InkProvider)], resource=[(resource/type : paper)], credentials=[], from=REQUESTER]
+			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : InkProvider)], resource=[(resource/type : paper)], from=REQUESTER]
 			    policy 1: from match([(role : InkProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    rule 1.1: satisfied: no one to exchange
@@ -1647,7 +1559,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							anySuchThat(new Attributes()
 									.add("role", "InkProvider")))
 						))))
@@ -1667,18 +1578,17 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : InkProvider)]]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=anySuchThat: [(role : InkProvider)]]
 			    policy 1: from match([(role : InkProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    rule 1.1: not satisfied: no one from exchange
@@ -1704,7 +1614,6 @@ class SemanticsTest {
 							me(),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							anySuchThat(new Attributes()
 								.add("role", "PrinterProvider")))
 						))))
@@ -1724,18 +1633,17 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			    rule 1.1: evaluating Exchange[to=ME, resource=[(resource/type : paper)], from=anySuchThat: [(role : PrinterProvider)]]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			result: false
@@ -1761,7 +1669,6 @@ class SemanticsTest {
 									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							allSuchThat(new Attributes()
 								.add("role", "PrinterProvider")))
 						))))
@@ -1781,18 +1688,17 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=allSuchThat: [(role : PrinterProvider)]]
+			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], from=allSuchThat: [(role : PrinterProvider)]]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
@@ -1821,7 +1727,6 @@ class SemanticsTest {
 									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							anySuchThat(new Attributes()
 								.add("role", "PrinterProvider")))
 						))))
@@ -1841,18 +1746,17 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			    rule 1.1: evaluating Exchange[to=anySuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], from=anySuchThat: [(role : PrinterProvider)]]
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
@@ -1882,7 +1786,6 @@ class SemanticsTest {
 									.add("role", "PrinterProvider")),
 							new Attributes()
 								.add("resource/type", "paper"),
-							new Attributes(),
 							allSuchThat(new Attributes()
 									.add("role", "PaperProvider")))
 						))))
@@ -1918,20 +1821,19 @@ class SemanticsTest {
 				index(2), // Bob
 				new Attributes()
 					.add("resource/type", "printer"),
-				new Attributes(),
 				anySuchThat(new Attributes()
 					.add("role", "PrinterProvider"))
 			),
 			"""
-			evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=anySuchThat: [(role : PrinterProvider)]]
+			evaluating Request[requester=2, resource=[(resource/type : printer)], from=anySuchThat: [(role : PrinterProvider)]]
 			  finding matching policies
 			    policy 1: from match([(role : PrinterProvider)], [(name : Alice), (role : PrinterProvider)]) -> true
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], credentials=[], from=1]
+			  policy 1: evaluating Request[requester=2, resource=[(resource/type : printer)], from=1]
 			    rule 1.1: resource match([(resource/type : printer)], [(resource/type : printer)]) -> true
 			    rule 1.1: condition true -> true
-			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], credentials=[], from=allSuchThat: [(role : PaperProvider)]]
+			    rule 1.1: evaluating Exchange[to=allSuchThat: [(role : PrinterProvider)], resource=[(resource/type : paper)], from=allSuchThat: [(role : PaperProvider)]]
 			    policy 1: from match([(role : PaperProvider)], [(name : Alice), (role : PrinterProvider)]) -> false
 			    policy 2: from match([(role : PaperProvider)], [(name : Bob), (role : PaperProvider)]) -> true
 			    policy 3: from match([(role : PaperProvider)], [(name : Carl), (role : PaperProvider)]) -> true
@@ -1940,23 +1842,23 @@ class SemanticsTest {
 			    policy 2: from match([(role : PrinterProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    policy 3: from match([(role : PrinterProvider)], [(name : Carl), (role : PaperProvider)]) -> false
 			    policy 4: from match([(role : PrinterProvider)], [(name : Ed), (role : PrinterProvider)]) -> true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=1, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=2]
-			      policy 2: evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=2]
+			    evaluating Request[requester=4, resource=[(resource/type : paper)], from=2]
+			      policy 2: evaluating Request[requester=4, resource=[(resource/type : paper)], from=2]
 			        rule 2.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 2.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], credentials=[], from=3]
+			    evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
+			      policy 3: evaluating Request[requester=1, resource=[(resource/type : paper)], from=3]
 			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 3.1: condition true -> true
 			    result: true
-			    evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=3]
-			      policy 3: evaluating Request[requester=4, resource=[(resource/type : paper)], credentials=[], from=3]
+			    evaluating Request[requester=4, resource=[(resource/type : paper)], from=3]
+			      policy 3: evaluating Request[requester=4, resource=[(resource/type : paper)], from=3]
 			        rule 3.1: resource match([(resource/type : paper)], [(resource/type : paper)]) -> true
 			        rule 3.1: condition true -> true
 			    result: true
