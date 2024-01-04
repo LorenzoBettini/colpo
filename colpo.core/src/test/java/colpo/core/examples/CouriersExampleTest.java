@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import colpo.core.AndExchange;
 import colpo.core.Attributes;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.OrExchange;
@@ -202,6 +203,131 @@ class CouriersExampleTest {
 			          rule 1.2: condition company != RabbitService -> true
 			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
 			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			      result: true
+			    rule 2.1: END Exchange -> true
+			result: true
+			"""
+		);
+	}
+
+	@Test
+	void thirdScenario() {
+		policies.add(
+			new Policy( // index 1
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "RabbitService"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Lucca"),
+						new ExpressionWithDescription(
+							attributes -> attributes.name("company").equals("RabbitService"),
+							"company = RabbitService")))
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Lucca"),
+						new ExpressionWithDescription(
+							attributes -> !attributes.name("company").equals("RabbitService"),
+							"company != RabbitService"),
+						new SingleExchange(
+							me(),
+							new Attributes()
+								.add("type", "addrInfo")
+								.add("city", "Prato"),
+							requester())))
+					))
+		.add(
+			new Policy( // index 2
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "FastAndFurious"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Prato"),
+						new AndExchange(
+							new SingleExchange(
+								me(),
+								new Attributes()
+									.add("type", "addrInfo")
+									.add("city", "Lucca"),
+								anySuchThat(new Attributes()
+									.add("service", "delivery")
+									.add("company", "RabbitService"))),
+							new SingleExchange(
+								me(),
+								new Attributes()
+									.add("type", "addrInfo")
+									.add("city", "Grosseto"),
+								anySuchThat(new Attributes()
+										.add("service", "delivery")
+										.add("company", "RabbitService")))
+						)
+					))))
+		.add(
+			new Policy( // index 3
+				new Attributes()
+					.add("service", "delivery")
+					.add("company", "RabbitService"),
+				new Rules()
+					.add(new Rule(
+						new Attributes()
+							.add("type", "addrInfo")
+							.add("city", "Grosseto")
+					))));
+
+		assertResultTrue(
+			new Request(
+				index(1), // RabbitService
+				new Attributes()
+					.add("type", "addrInfo")
+					.add("city", "Prato"),
+				anySuchThat(new Attributes()
+					.add("service", "delivery")
+					.add("company", "FastAndFurious"))
+			),
+			"""
+			evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=anySuchThat: [(service : delivery), (company : FastAndFurious)]]
+			  finding matching policies
+			    policy 2: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : FastAndFurious)]) -> true
+			    policy 3: from match([(service : delivery), (company : FastAndFurious)], [(service : delivery), (company : RabbitService)]) -> false
+			  policy 2: evaluating Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			    rule 2.1: resource match([(type : addrInfo), (city : Prato)], [(type : addrInfo), (city : Prato)]) -> true
+			    rule 2.1: condition true -> true
+			    rule 2.1: evaluating AND(Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], from=anySuchThat: [(service : delivery), (company : RabbitService)]], Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], from=anySuchThat: [(service : delivery), (company : RabbitService)]])
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Lucca)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
+			      policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			      policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
+			      policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]
+			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]
+			          rule 1.1: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
+			          rule 1.1: condition company = RabbitService -> false
+			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]
+			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
+			          rule 1.2: condition company != RabbitService -> true
+			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
+			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			      result: true
+			    rule 2.1: AND
+			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
+			      policy 1: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			      policy 2: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : FastAndFurious)]) -> false
+			      policy 3: from match([(service : delivery), (company : RabbitService)], [(service : delivery), (company : RabbitService)]) -> true
+			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=1]
+			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=1]
+			          rule 1.1: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Lucca)]) -> false
+			        policy 1: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=1]
+			          rule 1.2: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Lucca)]) -> false
+			      result: false
+			      evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=3]
+			        policy 3: evaluating Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=3]
+			          rule 3.1: resource match([(type : addrInfo), (city : Grosseto)], [(type : addrInfo), (city : Grosseto)]) -> true
+			          rule 3.1: condition true -> true
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
