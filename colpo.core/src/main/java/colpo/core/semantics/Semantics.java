@@ -130,7 +130,7 @@ public class Semantics {
 				return false;
 			result = rule.getCondition().evaluate(
 				name -> Stream.of(
-							request.resource(), request.credentials(),
+							request.resource(),
 							contextHandler.ofParty(policyIndex),
 							policies.getByIndex(request.requester().index()).party())
 					.map(attributes -> attributes.name(name))
@@ -291,7 +291,6 @@ public class Semantics {
 		var exchangeRequest = new Request(
 			exchangeRequestRequester,
 			exchange.resource(),
-			exchange.credentials(),
 			exchangeRequestFrom);
 		boolean result = false;
 		if (requestComply != null) {

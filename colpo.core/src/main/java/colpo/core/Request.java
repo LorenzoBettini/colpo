@@ -6,7 +6,7 @@ package colpo.core;
 /**
  * @author Lorenzo Bettini
  */
-public record Request(IndexParticipant requester, Attributes resource, Attributes credentials, RequestFromParticipant from) {
+public record Request(IndexParticipant requester, Attributes resource, RequestFromParticipant from) {
 
 	public Request {
 		if (requester != null && requester.getIndex() > 0 && requester.getIndex() == from.getIndex())
@@ -21,7 +21,6 @@ public record Request(IndexParticipant requester, Attributes resource, Attribute
 	 * @return
 	 */
 	public Request withFrom(int participantIndex) {
-		return new Request(requester, resource, credentials,
-			Participants.index(participantIndex));
+		return new Request(requester, resource, Participants.index(participantIndex));
 	}
 }
