@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.AndExchange;
-import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.ContextHandler;
 import colpo.core.ExpressionWithDescription;
@@ -427,14 +426,6 @@ class CouriersExampleTest {
 			.add(2, "position", "Prato")
 			.add(3, "timeHour", 10)
 			.add(3, "position", "Pisa")
-		);
-
-		var attributesMatcher = new AttributeMatcher();
-		// custom compliance relation
-		semantics.requestComply((newRequest, existingRequest) -> 
-			newRequest.requester().equals(existingRequest.requester())
-			&& newRequest.from().equals(existingRequest.from())
-			&& attributesMatcher.match(newRequest.resource(), existingRequest.resource())
 		);
 
 		assertResultTrue(
