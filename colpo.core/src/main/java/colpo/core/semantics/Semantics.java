@@ -40,7 +40,11 @@ public class Semantics {
 	private AttributeMatcher matcher = new AttributeMatcher();
 	private Trace trace = new Trace();
 	private ContextHandler contextHandler = EMPTY_CONTEXT_HANDLER;
-	private RequestComply requestComply = null;
+	private RequestComply requestComply =
+		(newRequest, existingRequest) -> 
+			newRequest.requester().equals(existingRequest.requester())
+			&& newRequest.from().equals(existingRequest.from())
+			&& matcher.match(newRequest.resource(), existingRequest.resource());
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
 
@@ -293,17 +297,10 @@ public class Semantics {
 			exchange.resource(),
 			exchangeRequestFrom);
 		boolean result = false;
-		if (requestComply != null) {
-			if (requests.stream()
-					.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
-				trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-				result = true;
-			}
-		} else {
-			if (requests.contains(exchangeRequest)) {
-				trace.add(String.format("%s: already found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-				result = true;
-			}
+		if (requests.stream()
+				.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
+			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
+			result = true;
 		}
 		if (!result)
 			result = evaluate(exchangeRequest, requests);

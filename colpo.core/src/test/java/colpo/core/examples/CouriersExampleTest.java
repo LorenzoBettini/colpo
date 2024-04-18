@@ -204,7 +204,7 @@ class CouriersExampleTest {
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition company != RabbitService -> true
 			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
-			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			          rule 1.2: compliant request found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
@@ -313,7 +313,7 @@ class CouriersExampleTest {
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition company != RabbitService -> true
 			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
-			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			          rule 1.2: compliant request found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
 			      result: true
 			    rule 2.1: AND
 			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
