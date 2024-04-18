@@ -17,6 +17,7 @@ import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
+import colpo.core.DefaultRequestComply;
 import colpo.core.Exchange;
 import colpo.core.RequestFromParticipant;
 import colpo.core.IndexParticipant;
@@ -40,11 +41,7 @@ public class Semantics {
 	private AttributeMatcher matcher = new AttributeMatcher();
 	private Trace trace = new Trace();
 	private ContextHandler contextHandler = EMPTY_CONTEXT_HANDLER;
-	private RequestComply requestComply =
-		(newRequest, existingRequest) -> 
-			newRequest.requester().equals(existingRequest.requester())
-			&& newRequest.from().equals(existingRequest.from())
-			&& matcher.match(newRequest.resource(), existingRequest.resource());
+	private RequestComply requestComply = new DefaultRequestComply(matcher);
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
 
