@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import colpo.core.AndExchange;
-import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.ContextHandler;
 import colpo.core.ExpressionWithDescription;
@@ -204,7 +203,7 @@ class CouriersExampleTest {
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition company != RabbitService -> true
 			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
-			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			          rule 1.2: compliant request found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
@@ -313,7 +312,7 @@ class CouriersExampleTest {
 			          rule 1.2: resource match([(type : addrInfo), (city : Lucca)], [(type : addrInfo), (city : Lucca)]) -> true
 			          rule 1.2: condition company != RabbitService -> true
 			          rule 1.2: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Prato)], from=REQUESTER]
-			          rule 1.2: already found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			          rule 1.2: compliant request found Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
 			      result: true
 			    rule 2.1: AND
 			      rule 2.1: evaluating Exchange[to=ME, resource=[(type : addrInfo), (city : Grosseto)], from=anySuchThat: [(service : delivery), (company : RabbitService)]]
@@ -427,14 +426,6 @@ class CouriersExampleTest {
 			.add(2, "position", "Prato")
 			.add(3, "timeHour", 10)
 			.add(3, "position", "Pisa")
-		);
-
-		var attributesMatcher = new AttributeMatcher();
-		// custom compliance relation
-		semantics.requestComply((newRequest, existingRequest) -> 
-			newRequest.requester().equals(existingRequest.requester())
-			&& newRequest.from().equals(existingRequest.from())
-			&& attributesMatcher.match(newRequest.resource(), existingRequest.resource())
 		);
 
 		assertResultTrue(

@@ -17,6 +17,7 @@ import colpo.core.AttributeMatcher;
 import colpo.core.Attributes;
 import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
+import colpo.core.DefaultRequestComply;
 import colpo.core.Exchange;
 import colpo.core.RequestFromParticipant;
 import colpo.core.IndexParticipant;
@@ -40,7 +41,7 @@ public class Semantics {
 	private AttributeMatcher matcher = new AttributeMatcher();
 	private Trace trace = new Trace();
 	private ContextHandler contextHandler = EMPTY_CONTEXT_HANDLER;
-	private RequestComply requestComply = null;
+	private RequestComply requestComply = new DefaultRequestComply(matcher);
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
 
@@ -293,17 +294,10 @@ public class Semantics {
 			exchange.resource(),
 			exchangeRequestFrom);
 		boolean result = false;
-		if (requestComply != null) {
-			if (requests.stream()
-					.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
-				trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-				result = true;
-			}
-		} else {
-			if (requests.contains(exchangeRequest)) {
-				trace.add(String.format("%s: already found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-				result = true;
-			}
+		if (requests.stream()
+				.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
+			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
+			result = true;
 		}
 		if (!result)
 			result = evaluate(exchangeRequest, requests);
