@@ -71,9 +71,14 @@ public class Semantics {
 		var from = request.from();
 		var index = from.getIndex();
 		var result = false;
-		if (index > 0)
+		var returned = DENIED;
+		if (index > 0) {
 			result = evaluate(index, policies.getByIndex(index), request, requests);
-		else {
+			// TODO: use the result of the call when updated
+			if (result) {
+				returned = Result.permitted().add(request);
+			}
+		} else {
 			trace.addAndThenIndent("finding matching policies");
 			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
 			trace.removeIndent();
@@ -93,7 +98,7 @@ public class Semantics {
 			}
 		}
 		trace.removeIndentAndThenAdd(String.format("result: %s", result));
-		return new Result(result);
+		return returned.isPermitted() ? returned : new Result(result);
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,

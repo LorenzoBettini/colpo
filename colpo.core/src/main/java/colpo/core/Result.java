@@ -31,4 +31,9 @@ public class Result {
 	public Collection<Request> getRequests() {
 		return requests;
 	}
+
+	public Result add(Request request) {
+		requests.add(request);
+		return this;
+	}
 }
