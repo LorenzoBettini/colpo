@@ -192,7 +192,7 @@ public class Semantics {
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
 			}
 		} else if (exchange instanceof SingleExchange singleExchange)
-			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
+			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests).isPermitted();
 		else // exchange is null
 			result = true;
 
@@ -205,7 +205,7 @@ public class Semantics {
 		return result;
 	}
 
-	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> requests) {
+	private Result evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> requests) {
 		trace.add(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 
 		var exchangeFrom = exchange.from();
@@ -228,14 +228,14 @@ public class Semantics {
 
 		if (toIndexes.isEmpty()) {
 			trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
-			return true; // there's no one to satisfy
+			return Result.permitted().add(request); // there's no one to satisfy
 		}
 		// this check would be implied by the later
 		// atLeastOneRequest.hasBeenGenerated for from: allSuchThat
 		// but this way we can give a more informative message
 		if (fromIndexes.isEmpty()) {
 			trace.add(String.format("%s: not satisfied: no one from exchange", traceForRule(policyIndex, ruleIndex)));
-			return false; // no one can satisfy
+			return DENIED; // no one can satisfy
 		}
 
 		BiPredicate<Integer, Integer> differentIndexes = (i1, i2) -> !i1.equals(i2);
@@ -249,13 +249,18 @@ public class Semantics {
 			boolean hasBeenGenerated = false;
 		};
 
+		var successfullRequests = new ArrayList<Request>();
 		BiPredicate<Integer, Integer> innerPredicate = (fromIndex, toIndex) -> {
 			// record that at least one inner loop has been executed
 			// useful for the external allMatch case
 			// see below
 			atLeastOneRequest.hasBeenGenerated = true;
-			return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-				index(toIndex), index(fromIndex), requests).isPermitted();
+			var evaluateExchangeRequest = evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
+				index(toIndex), index(fromIndex), requests);
+			var permitted = evaluateExchangeRequest.isPermitted();
+			if (permitted)
+				successfullRequests.addAll(evaluateExchangeRequest.getRequests());
+			return permitted;
 		};
 
 		if (exchangeTo.isAll()) {
@@ -286,7 +291,7 @@ public class Semantics {
 				.anyMatch(innerOperation);
 		}
 
-		return result;
+		return result ? Result.permitted().addAll(successfullRequests) : DENIED;
 	}
 
 	private List<Integer> computeIndexes(Attributes attributesToMatch) {
