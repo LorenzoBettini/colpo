@@ -255,7 +255,7 @@ public class Semantics {
 			// see below
 			atLeastOneRequest.hasBeenGenerated = true;
 			return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-				index(toIndex), index(fromIndex), requests);
+				index(toIndex), index(fromIndex), requests).isPermitted();
 		};
 
 		if (exchangeTo.isAll()) {
@@ -300,7 +300,7 @@ public class Semantics {
 				.toList();
 	}
 
-	private boolean evaluateExchangeRequest(int policyIndex,
+	private Result evaluateExchangeRequest(int policyIndex,
 			int ruleIndex,
 			SingleExchange exchange,
 			IndexParticipant exchangeRequestRequester,
@@ -310,15 +310,12 @@ public class Semantics {
 			exchangeRequestRequester,
 			exchange.resource(),
 			exchangeRequestFrom);
-		var result = false;
 		if (requests.stream()
 				.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
 			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-			result = true;
+			return Result.permitted();
 		}
-		if (!result)
-			result = evaluate(exchangeRequest, requests).isPermitted();
-		return result;
+		return evaluate(exchangeRequest, requests);
 	}
 
 	private String traceForRule(int policyIndex, int ruleIndex) {
