@@ -395,7 +395,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=3]"
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (role : "Provider"))
@@ -420,7 +421,10 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[], from=2]
+			Request[requester=1, resource=[], from=3]"""
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (name : "Bob"))
@@ -441,7 +445,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=3]"
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (name : "Carl"))

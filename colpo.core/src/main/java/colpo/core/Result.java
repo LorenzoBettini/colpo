@@ -36,4 +36,9 @@ public class Result {
 		requests.add(request);
 		return this;
 	}
+
+	public Result addAll(Collection<Request> requests) {
+		this.requests.addAll(requests);
+		return this;
+	}
 }

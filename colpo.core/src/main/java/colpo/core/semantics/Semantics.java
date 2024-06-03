@@ -2,6 +2,7 @@ package colpo.core.semantics;
 
 import static colpo.core.Participants.index;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -71,7 +72,7 @@ public class Semantics {
 		var from = request.from();
 		var index = from.getIndex();
 		var result = false;
-		var returned = DENIED;
+		Result returned = null;
 		if (index > 0) {
 			result = evaluate(index, policies.getByIndex(index), request, requests);
 			// TODO: use the result of the call when updated
@@ -85,9 +86,17 @@ public class Semantics {
 			if (policiesToEvaluate.isEmpty()) {
 				result = false;
 			} else {
+				// TODO: use the result of the call when updated
+				var successfullRequests = new ArrayList<Request>();
 				Predicate<PolicyData> evaluatePredicate =
-						d -> evaluate(d.index(), d.policy(),
-								request.withFrom(d.index()), requests);
+					d -> {
+						var requestToEvaluate = request.withFrom(d.index());
+						var evaluate = evaluate(d.index(), d.policy(),
+								requestToEvaluate, requests);
+						if (evaluate)
+							successfullRequests.add(requestToEvaluate);
+						return evaluate;
+					};
 				if (from.isAll()) {
 					result = policiesToEvaluate.stream()
 						.allMatch(evaluatePredicate);
@@ -95,10 +104,12 @@ public class Semantics {
 					result = policiesToEvaluate.stream()
 						.anyMatch(evaluatePredicate);
 				}
+				if (result)
+					returned = Result.permitted().addAll(successfullRequests);
 			}
 		}
 		trace.removeIndentAndThenAdd(String.format("result: %s", result));
-		return returned.isPermitted() ? returned : new Result(result);
+		return returned != null ? returned : new Result(result);
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,
