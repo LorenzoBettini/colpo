@@ -71,19 +71,14 @@ public class Semantics {
 		trace.addAndThenIndent(String.format("evaluating %s", request));
 		var from = request.from();
 		var index = from.getIndex();
-		var result = false;
-		Result returned = null;
+		Result returned = DENIED;
 		if (index > 0) {
 			returned = evaluate(index, policies.getByIndex(index), request, requests);
-			result = returned.isPermitted();
 		} else {
 			trace.addAndThenIndent("finding matching policies");
 			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
 			trace.removeIndent();
-			if (policiesToEvaluate.isEmpty()) {
-				result = false;
-			} else {
-				// TODO: use the result of the call when updated
+			if (!policiesToEvaluate.isEmpty()) {
 				var successfullRequests = new ArrayList<Request>();
 				Predicate<PolicyData> evaluatePredicate =
 					d -> {
@@ -93,6 +88,7 @@ public class Semantics {
 							successfullRequests.addAll(evaluate.getRequests());
 						return evaluate.isPermitted();
 					};
+				var result = false;
 				if (from.isAll()) {
 					result = policiesToEvaluate.stream()
 						.allMatch(evaluatePredicate);
@@ -104,9 +100,8 @@ public class Semantics {
 					returned = Result.permitted().addAll(successfullRequests);
 			}
 		}
-		// TODO: use the result of the call when updated
-		trace.removeIndentAndThenAdd(String.format("result: %s", result));
-		return returned != null ? returned : new Result(result);
+		trace.removeIndentAndThenAdd(String.format("result: %s", returned.isPermitted()));
+		return returned;
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,
