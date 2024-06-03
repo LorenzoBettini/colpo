@@ -156,7 +156,7 @@ public class Semantics {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
 			if (!result)
 				return returned;
-			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
+			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests).isPermitted();
 			// TODO: use the result of the call when updated
 			if (result)
 				returned = Result.permitted().add(request);
@@ -169,8 +169,8 @@ public class Semantics {
 		}
 	}
 
-	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> requests) {
-		boolean result = true;
+	private Result evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> requests) {
+		Result result;
 		requests.add(request);
 
 		var isComposite = exchange instanceof CompositeExchange;
@@ -181,23 +181,28 @@ public class Semantics {
 
 		if (exchange instanceof OrExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
-			if (!result) {
+			if (!result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
 			}
 		} else if (exchange instanceof AndExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
-			if (result) {
+			if (result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
-				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				var result1 = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				if (result1.isPermitted())
+					result.addAll(result1.getRequests());
+				else
+					result = DENIED;
 			}
 		} else if (exchange instanceof SingleExchange singleExchange)
-			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests).isPermitted();
+			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
 		else // exchange is null
-			result = true;
+			result = Result.permitted();
 
 		if (isComposite) {
-			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s", traceForRule(policyIndex, ruleIndex), result));
+			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s",
+					traceForRule(policyIndex, ruleIndex), result.isPermitted()));
 		}
 
 		requests.remove(request);
