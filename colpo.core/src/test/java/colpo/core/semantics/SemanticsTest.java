@@ -522,7 +522,10 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -633,7 +636,10 @@ class SemanticsTest {
 			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -668,7 +674,10 @@ class SemanticsTest {
 			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=3, resource=[(resource/type : printer)], from=1]"""
 		);
 	}
 
@@ -756,7 +765,10 @@ class SemanticsTest {
 			        rule 2.1: compliant request found Request[requester=2, resource=[(resource/type : ink)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -783,7 +795,10 @@ class SemanticsTest {
 			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -818,7 +833,10 @@ class SemanticsTest {
 			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=3, resource=[(resource/type : printer)], from=1]"""
 		);
 	}
 
@@ -905,7 +923,10 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : white)], from=2]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -939,7 +960,10 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : yellow)], from=3]"""
 		);
 		assertResultFalse(
 			new Request(
@@ -1067,7 +1091,11 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(color : white)], from=2]"""
 		);
 		assertResultFalse(
 			new Request(
@@ -1226,7 +1254,10 @@ class SemanticsTest {
 			        rule 4.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : green)], from=4]"""
 		);
 	}
 
@@ -1326,7 +1357,12 @@ class SemanticsTest {
 			        rule 4.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=1, resource=[(resource/type : paper)], from=4]"""
 		);
 	}
 
