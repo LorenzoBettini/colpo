@@ -156,11 +156,7 @@ public class Semantics {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
 			if (!result)
 				return returned;
-			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests).isPermitted();
-			// TODO: use the result of the call when updated
-			if (result)
-				returned = Result.permitted().add(request);
-			return returned;
+			return evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
 		} catch (Exception e) {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), e.getMessage()));
 			return returned;
@@ -198,7 +194,7 @@ public class Semantics {
 		} else if (exchange instanceof SingleExchange singleExchange)
 			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
 		else // exchange is null
-			result = Result.permitted();
+			result = Result.permitted().add(request);
 
 		if (isComposite) {
 			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s",
