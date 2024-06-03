@@ -1873,14 +1873,14 @@ class SemanticsTest {
 
 	private void assertResultTrue(Request request, String expectedTrace) {
 		assertAll(
-			() -> assertTrue(semantics.evaluate(request)),
+			() -> assertTrue(semantics.evaluate(request).isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
 		);
 	}
 
 	private void assertResultFalse(Request request, String expectedTrace) {
 		assertAll(
-			() -> assertFalse(semantics.evaluate(request)),
+			() -> assertFalse(semantics.evaluate(request).isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
 		);
 	}

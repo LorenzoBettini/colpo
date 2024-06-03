@@ -20,6 +20,7 @@ import colpo.core.ContextHandler;
 import colpo.core.DefaultRequestComply;
 import colpo.core.Exchange;
 import colpo.core.RequestFromParticipant;
+import colpo.core.Result;
 import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -44,6 +45,7 @@ public class Semantics {
 	private RequestComply requestComply = new DefaultRequestComply(matcher);
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
+	public static final Result DENIED = new Result(false);
 
 	public Semantics(Policies policies) {
 		this.policies = policies;
@@ -59,16 +61,16 @@ public class Semantics {
 		return this;
 	}
 
-	public boolean evaluate(Request request) {
+	public Result evaluate(Request request) {
 		trace.reset();
 		return evaluate(request, new LinkedHashSet<>());
 	}
 
-	private boolean evaluate(Request request, Set<Request> requests) {
+	private Result evaluate(Request request, Set<Request> requests) {
 		trace.addAndThenIndent(String.format("evaluating %s", request));
 		var from = request.from();
 		var index = from.getIndex();
-		boolean result = false;
+		var result = false;
 		if (index > 0)
 			result = evaluate(index, policies.getByIndex(index), request, requests);
 		else {
@@ -91,7 +93,7 @@ public class Semantics {
 			}
 		}
 		trace.removeIndentAndThenAdd(String.format("result: %s", result));
-		return result;
+		return new Result(result);
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,
@@ -293,14 +295,14 @@ public class Semantics {
 			exchangeRequestRequester,
 			exchange.resource(),
 			exchangeRequestFrom);
-		boolean result = false;
+		var result = false;
 		if (requests.stream()
 				.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
 			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
 			result = true;
 		}
 		if (!result)
-			result = evaluate(exchangeRequest, requests);
+			result = evaluate(exchangeRequest, requests).isPermitted();
 		return result;
 	}
 

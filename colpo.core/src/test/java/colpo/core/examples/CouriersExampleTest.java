@@ -479,7 +479,7 @@ class CouriersExampleTest {
 
 	private void assertResultTrue(Request request, String expectedTrace) {
 		assertAll(
-			() -> assertTrue(semantics.evaluate(request)),
+			() -> assertTrue(semantics.evaluate(request).isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
 		);
 	}
