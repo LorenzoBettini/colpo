@@ -138,11 +138,10 @@ public class Semantics {
 	private Result evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> requests) {
 		trace.addAndThenIndent(String.format("policy %d: evaluating %s",
 				policyIndex, request));
-		var returned = DENIED;
 		try {
 			boolean result = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
 			if (!result)
-				return returned;
+				return DENIED;
 			result = rule.getCondition().evaluate(
 				name -> Stream.of(
 							request.resource(),
@@ -155,11 +154,16 @@ public class Semantics {
 			);
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
 			if (!result)
-				return returned;
-			return evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
+				return DENIED;
+			Result evaluateExchange = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
+			if (evaluateExchange.isPermitted())
+				return Result.permitted()
+						.add(request)
+						.addAll(evaluateExchange.getRequests());
+			return evaluateExchange;
 		} catch (Exception e) {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), e.getMessage()));
-			return returned;
+			return DENIED;
 		} finally {
 			trace.removeIndent();
 		}
@@ -194,7 +198,7 @@ public class Semantics {
 		} else if (exchange instanceof SingleExchange singleExchange)
 			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
 		else // exchange is null
-			result = Result.permitted().add(request);
+			result = Result.permitted();
 
 		if (isComposite) {
 			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s",
