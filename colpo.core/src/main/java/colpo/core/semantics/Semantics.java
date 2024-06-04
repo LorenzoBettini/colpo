@@ -81,13 +81,9 @@ public class Semantics {
 			if (!policiesToEvaluate.isEmpty()) {
 				var successfullRequests = new ArrayList<Request>();
 				Predicate<PolicyData> evaluatePredicate =
-					d -> {
-						var evaluate = evaluate(d.index(), d.policy(),
-								request.withFrom(d.index()), requests);
-						if (evaluate.isPermitted())
-							successfullRequests.addAll(evaluate.getRequests());
-						return evaluate.isPermitted();
-					};
+					d -> collectingRequests(
+						evaluate(d.index(), d.policy(), request.withFrom(d.index()), requests),
+						successfullRequests);
 				var result = false;
 				if (from.isAll()) {
 					result = policiesToEvaluate.stream()
@@ -102,6 +98,12 @@ public class Semantics {
 		}
 		trace.removeIndentAndThenAdd(String.format("result: %s", returned.isPermitted()));
 		return returned;
+	}
+
+	private boolean collectingRequests(Result result, Collection<Request> requests) {
+		if (result.isPermitted())
+			requests.addAll(result.getRequests());
+		return result.isPermitted();
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,
@@ -195,10 +197,11 @@ public class Semantics {
 				else
 					result = DENIED;
 			}
-		} else if (exchange instanceof SingleExchange singleExchange)
+		} else if (exchange instanceof SingleExchange singleExchange) {
 			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
-		else // exchange is null
+		} else {// exchange is null
 			result = Result.permitted();
+		}
 
 		if (isComposite) {
 			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s",
@@ -262,10 +265,7 @@ public class Semantics {
 			atLeastOneRequest.hasBeenGenerated = true;
 			var evaluateExchangeRequest = evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
 				index(toIndex), index(fromIndex), requests);
-			var permitted = evaluateExchangeRequest.isPermitted();
-			if (permitted)
-				successfullRequests.addAll(evaluateExchangeRequest.getRequests());
-			return permitted;
+			return collectingRequests(evaluateExchangeRequest, successfullRequests);
 		};
 
 		if (exchangeTo.isAll()) {
