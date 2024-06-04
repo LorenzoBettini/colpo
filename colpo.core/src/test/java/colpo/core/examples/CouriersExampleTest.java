@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -106,7 +108,10 @@ class CouriersExampleTest {
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]"""
 		);
 	}
 
@@ -207,7 +212,10 @@ class CouriersExampleTest {
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]"""
 		);
 	}
 
@@ -332,7 +340,11 @@ class CouriersExampleTest {
 			      result: true
 			    rule 2.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			Request[requester=2, resource=[(type : addrInfo), (city : Lucca)], from=1]
+			Request[requester=2, resource=[(type : addrInfo), (city : Grosseto)], from=3]"""
 		);
 	}
 
@@ -469,7 +481,10 @@ class CouriersExampleTest {
 			        rule 3.2: compliant request found Request[requester=1, resource=[(type : addrInfo)], from=2]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(type : addrInfo), (city : Prato)], from=2]
+			Request[requester=2, resource=[(type : addrInfo), (city : Pisa)], from=3]"""
 		);
 	}
 
@@ -477,11 +492,15 @@ class CouriersExampleTest {
 		assertEquals(expected, policies.description());
 	}
 
-	private void assertResultTrue(Request request, String expectedTrace) {
+	private void assertResultTrue(Request request, String expectedTrace, String expectedRequests) {
+		var result = semantics.evaluate(request);
 		assertAll(
-			() -> assertTrue(semantics.evaluate(request).isPermitted()),
-			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
+			() -> { assertTrue(result.isPermitted()); },
+			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
+			() -> assertEquals(expectedRequests, 
+				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
 		);
 	}
+
 
 }
