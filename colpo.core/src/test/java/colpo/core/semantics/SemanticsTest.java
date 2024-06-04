@@ -1448,7 +1448,11 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=4, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -1529,7 +1533,10 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -1585,7 +1592,8 @@ class SemanticsTest {
 			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    rule 1.1: satisfied: no one to exchange
 			result: true
-			"""
+			""",
+			"Request[requester=2, resource=[(resource/type : printer)], from=1]"
 		);
 	}
 
@@ -1911,7 +1919,13 @@ class SemanticsTest {
 			        rule 3.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=4, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=4, resource=[(resource/type : paper)], from=3]"""
 		);
 	}
 
@@ -1926,13 +1940,6 @@ class SemanticsTest {
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
 			() -> assertEquals(expectedRequests, 
 				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
-		);
-	}
-
-	private void assertResultTrue(Request request, String expectedTrace) {
-		assertAll(
-			() -> assertTrue(semantics.evaluate(request).isPermitted()),
-			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
 		);
 	}
 
