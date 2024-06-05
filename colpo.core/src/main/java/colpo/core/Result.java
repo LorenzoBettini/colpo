@@ -1,6 +1,3 @@
-/**
- * 
- */
 package colpo.core;
 
 import java.util.ArrayList;
