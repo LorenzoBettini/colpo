@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +80,8 @@ class SemanticsTest {
 			    rule 2.1: resource match([], []) -> true
 			    rule 2.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=2]"
 		);
 		assertResultTrue(
 			new Request(
@@ -92,7 +95,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=3]"
 		);
 	}
 
@@ -240,7 +244,8 @@ class SemanticsTest {
 			    rule 4.1: resource match([(paper : white), (file/format : PDF)], [(paper : white), (file/format : PDF)]) -> true
 			    rule 4.1: condition file/format = PDF -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[(paper : white), (file/format : PDF)], from=4]"
 		);
 		// Alice requests
 		// ( resource: (paper : white), from: 5)
@@ -278,7 +283,8 @@ class SemanticsTest {
 			    rule 6.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 6.1: condition current/city = Firenze -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[(paper : white)], from=6]"
 		);
 	}
 
@@ -340,7 +346,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([(paper : white)], [(paper : white)]) -> true
 			    rule 3.1: condition name = Bob -> true
 			result: true
-			"""
+			""",
+			"Request[requester=2, resource=[(paper : white)], from=3]"
 		);
 	}
 
@@ -388,7 +395,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=3]"
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (role : "Provider"))
@@ -413,7 +421,10 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[], from=2]
+			Request[requester=1, resource=[], from=3]"""
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (name : "Bob"))
@@ -434,7 +445,8 @@ class SemanticsTest {
 			    rule 3.1: resource match([], []) -> true
 			    rule 3.1: condition true -> true
 			result: true
-			"""
+			""",
+			"Request[requester=1, resource=[], from=3]"
 		);
 		// Alice requests
 		// ( resource: empty, from: allSuchThat (name : "Carl"))
@@ -510,7 +522,10 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -621,7 +636,10 @@ class SemanticsTest {
 			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -656,7 +674,10 @@ class SemanticsTest {
 			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=3, resource=[(resource/type : printer)], from=1]"""
 		);
 	}
 
@@ -744,7 +765,10 @@ class SemanticsTest {
 			        rule 2.1: compliant request found Request[requester=2, resource=[(resource/type : ink)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -771,7 +795,10 @@ class SemanticsTest {
 			        rule 3.1: compliant request found Request[requester=3, resource=[(resource/type : printer)], from=1]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -806,7 +833,10 @@ class SemanticsTest {
 			        rule 1.1: compliant request found Request[requester=1, resource=[(resource/type : paper)], from=3]
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=3, resource=[(resource/type : printer)], from=1]"""
 		);
 	}
 
@@ -893,7 +923,10 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : white)], from=2]"""
 		);
 		assertResultTrue(
 			new Request(
@@ -927,7 +960,10 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=3, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : yellow)], from=3]"""
 		);
 		assertResultFalse(
 			new Request(
@@ -1055,7 +1091,11 @@ class SemanticsTest {
 			      result: true
 			    rule 1.1: END Exchange -> true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(color : white)], from=2]"""
 		);
 		assertResultFalse(
 			new Request(
@@ -1214,7 +1254,10 @@ class SemanticsTest {
 			        rule 4.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(paper/color : green)], from=4]"""
 		);
 	}
 
@@ -1314,7 +1357,12 @@ class SemanticsTest {
 			        rule 4.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=1, resource=[(resource/type : paper)], from=4]"""
 		);
 	}
 
@@ -1400,7 +1448,11 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=4, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -1481,7 +1533,10 @@ class SemanticsTest {
 			        rule 2.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]"""
 		);
 	}
 
@@ -1537,7 +1592,8 @@ class SemanticsTest {
 			    policy 2: from match([(role : InkProvider)], [(name : Bob), (role : PaperProvider)]) -> false
 			    rule 1.1: satisfied: no one to exchange
 			result: true
-			"""
+			""",
+			"Request[requester=2, resource=[(resource/type : printer)], from=1]"
 		);
 	}
 
@@ -1863,7 +1919,13 @@ class SemanticsTest {
 			        rule 3.1: condition true -> true
 			    result: true
 			result: true
+			""",
 			"""
+			Request[requester=2, resource=[(resource/type : printer)], from=1]
+			Request[requester=1, resource=[(resource/type : paper)], from=2]
+			Request[requester=4, resource=[(resource/type : paper)], from=2]
+			Request[requester=1, resource=[(resource/type : paper)], from=3]
+			Request[requester=4, resource=[(resource/type : paper)], from=3]"""
 		);
 	}
 
@@ -1871,16 +1933,19 @@ class SemanticsTest {
 		assertEquals(expected, policies.description());
 	}
 
-	private void assertResultTrue(Request request, String expectedTrace) {
+	private void assertResultTrue(Request request, String expectedTrace, String expectedRequests) {
+		var result = semantics.evaluate(request);
 		assertAll(
-			() -> assertTrue(semantics.evaluate(request)),
-			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
+			() -> assertTrue(result.isPermitted()),
+			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
+			() -> assertEquals(expectedRequests, 
+				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
 		);
 	}
 
 	private void assertResultFalse(Request request, String expectedTrace) {
 		assertAll(
-			() -> assertFalse(semantics.evaluate(request)),
+			() -> assertFalse(semantics.evaluate(request).isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString())
 		);
 	}

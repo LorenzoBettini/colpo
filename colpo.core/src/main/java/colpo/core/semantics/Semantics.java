@@ -2,6 +2,7 @@ package colpo.core.semantics;
 
 import static colpo.core.Participants.index;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -20,6 +21,7 @@ import colpo.core.ContextHandler;
 import colpo.core.DefaultRequestComply;
 import colpo.core.Exchange;
 import colpo.core.RequestFromParticipant;
+import colpo.core.Result;
 import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -44,6 +46,7 @@ public class Semantics {
 	private RequestComply requestComply = new DefaultRequestComply(matcher);
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
+	private static final Result DENIED = new Result(false);
 
 	public Semantics(Policies policies) {
 		this.policies = policies;
@@ -59,39 +62,49 @@ public class Semantics {
 		return this;
 	}
 
-	public boolean evaluate(Request request) {
+	public Result evaluate(Request request) {
 		trace.reset();
 		return evaluate(request, new LinkedHashSet<>());
 	}
 
-	private boolean evaluate(Request request, Set<Request> requests) {
+	private Result evaluate(Request request, Set<Request> requests) {
 		trace.addAndThenIndent(String.format("evaluating %s", request));
 		var from = request.from();
 		var index = from.getIndex();
-		boolean result = false;
-		if (index > 0)
+		var result = DENIED;
+		if (index > 0) {
 			result = evaluate(index, policies.getByIndex(index), request, requests);
-		else {
+		} else {
 			trace.addAndThenIndent("finding matching policies");
 			var policiesToEvaluate = policiesToEvaluate(request.requester(), from);
 			trace.removeIndent();
-			if (policiesToEvaluate.isEmpty()) {
-				result = false;
-			} else {
+			if (!policiesToEvaluate.isEmpty()) {
+				var successfullRequests = new ArrayList<Request>();
 				Predicate<PolicyData> evaluatePredicate =
-						d -> evaluate(d.index(), d.policy(),
-								request.withFrom(d.index()), requests);
+					d -> collectingRequests(
+						evaluate(d.index(), d.policy(), request.withFrom(d.index()), requests),
+						successfullRequests);
+				var permitted = false;
 				if (from.isAll()) {
-					result = policiesToEvaluate.stream()
+					permitted = policiesToEvaluate.stream()
 						.allMatch(evaluatePredicate);
 				} else {
-					result = policiesToEvaluate.stream()
+					permitted = policiesToEvaluate.stream()
 						.anyMatch(evaluatePredicate);
 				}
+				if (permitted)
+					result = Result.permitted().addAll(successfullRequests);
 			}
 		}
-		trace.removeIndentAndThenAdd(String.format("result: %s", result));
+		trace.removeIndentAndThenAdd(String.format("result: %s", result.isPermitted()));
 		return result;
+	}
+
+	private boolean collectingRequests(Result result, Collection<Request> requests) {
+		var permitted = result.isPermitted();
+		if (permitted)
+			requests.addAll(result.getRequests());
+		return permitted;
 	}
 
 	private Collection<PolicyData> policiesToEvaluate(Participant requester,
@@ -113,23 +126,26 @@ public class Semantics {
 		return matchResult;
 	}
 
-	private boolean evaluate(int policyIndex, Policy policy, Request request, Set<Request> requests) {
+	private Result evaluate(int policyIndex, Policy policy, Request request, Set<Request> requests) {
 		return evaluate(policyIndex, policy.rules(), request, requests);
 	}
 
-	private boolean evaluate(int policyIndex, Rules rules, Request request, Set<Request> requests) {
+	private Result evaluate(int policyIndex, Rules rules, Request request, Set<Request> requests) {
 		return rules.getRuleData()
-			.anyMatch(r -> evaluate(policyIndex, r.index(), r.rule(), request, requests));
+			.map(r -> evaluate(policyIndex, r.index(), r.rule(), request, requests))
+			.filter(Result::isPermitted)
+			.findFirst()
+			.orElse(DENIED);
 	}
 
-	private boolean evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> requests) {
+	private Result evaluate(int policyIndex, int ruleIndex, Rule rule, Request request, Set<Request> requests) {
 		trace.addAndThenIndent(String.format("policy %d: evaluating %s",
 				policyIndex, request));
 		try {
-			boolean result = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
-			if (!result)
-				return false;
-			result = rule.getCondition().evaluate(
+			boolean outcome = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
+			if (!outcome)
+				return DENIED;
+			outcome = rule.getCondition().evaluate(
 				name -> Stream.of(
 							request.resource(),
 							contextHandler.ofParty(policyIndex),
@@ -139,21 +155,25 @@ public class Semantics {
 					.findFirst()
 					.orElseThrow(() -> new UndefinedName(name))
 			);
-			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), result));
-			if (!result)
-				return false;
-			result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
+			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), outcome));
+			if (!outcome)
+				return DENIED;
+			var result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
+			if (result.isPermitted())
+				return Result.permitted()
+						.add(request)
+						.addAll(result.getRequests());
 			return result;
 		} catch (Exception e) {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), e.getMessage()));
-			return false;
+			return DENIED;
 		} finally {
 			trace.removeIndent();
 		}
 	}
 
-	private boolean evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> requests) {
-		boolean result = true;
+	private Result evaluateExchange(int policyIndex, int ruleIndex, Exchange exchange, Request request, Set<Request> requests) {
+		Result result;
 		requests.add(request);
 
 		var isComposite = exchange instanceof CompositeExchange;
@@ -164,23 +184,29 @@ public class Semantics {
 
 		if (exchange instanceof OrExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
-			if (!result) {
+			if (!result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
 			}
 		} else if (exchange instanceof AndExchange orExchange) {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
-			if (result) {
+			if (result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
-				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				var result1 = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				if (result1.isPermitted())
+					result.addAll(result1.getRequests());
+				else
+					result = DENIED;
 			}
-		} else if (exchange instanceof SingleExchange singleExchange)
+		} else if (exchange instanceof SingleExchange singleExchange) {
 			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
-		else // exchange is null
-			result = true;
+		} else {// exchange is null
+			result = Result.permitted();
+		}
 
 		if (isComposite) {
-			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s", traceForRule(policyIndex, ruleIndex), result));
+			trace.removeIndentAndThenAdd(String.format("%s: END Exchange -> %s",
+					traceForRule(policyIndex, ruleIndex), result.isPermitted()));
 		}
 
 		requests.remove(request);
@@ -188,7 +214,7 @@ public class Semantics {
 		return result;
 	}
 
-	private boolean evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> requests) {
+	private Result evaluate(int policyIndex, int ruleIndex, SingleExchange exchange, Request request, Set<Request> requests) {
 		trace.add(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 
 		var exchangeFrom = exchange.from();
@@ -211,14 +237,14 @@ public class Semantics {
 
 		if (toIndexes.isEmpty()) {
 			trace.add(String.format("%s: satisfied: no one to exchange", traceForRule(policyIndex, ruleIndex)));
-			return true; // there's no one to satisfy
+			return Result.permitted(); // there's no one to satisfy
 		}
 		// this check would be implied by the later
 		// atLeastOneRequest.hasBeenGenerated for from: allSuchThat
 		// but this way we can give a more informative message
 		if (fromIndexes.isEmpty()) {
 			trace.add(String.format("%s: not satisfied: no one from exchange", traceForRule(policyIndex, ruleIndex)));
-			return false; // no one can satisfy
+			return DENIED; // no one can satisfy
 		}
 
 		BiPredicate<Integer, Integer> differentIndexes = (i1, i2) -> !i1.equals(i2);
@@ -232,13 +258,15 @@ public class Semantics {
 			boolean hasBeenGenerated = false;
 		};
 
+		var successfullRequests = new ArrayList<Request>();
 		BiPredicate<Integer, Integer> innerPredicate = (fromIndex, toIndex) -> {
 			// record that at least one inner loop has been executed
 			// useful for the external allMatch case
 			// see below
 			atLeastOneRequest.hasBeenGenerated = true;
-			return evaluateExchangeRequest(policyIndex, ruleIndex, exchange,
-				index(toIndex), index(fromIndex), requests);
+			return collectingRequests(
+				evaluateExchangeRequest(policyIndex, ruleIndex, exchange, index(toIndex), index(fromIndex), requests),
+				successfullRequests);
 		};
 
 		if (exchangeTo.isAll()) {
@@ -253,23 +281,23 @@ public class Semantics {
 					.anyMatch(toIndex -> innerPredicate.test(fromIndex, toIndex));
 		}
 
-		var result = false;
+		var permitted = false;
 
 		if (exchangeFrom.isAll()) {
-			result = fromIndexes.stream()
+			permitted = fromIndexes.stream()
 				.allMatch(innerOperation);
 			// this additional check is required because allMatch returns
 			// true if the stream was empty
 			if (!atLeastOneRequest.hasBeenGenerated) {
 				trace.add(String.format("%s: not satisfied: no request could be generated", traceForRule(policyIndex, ruleIndex)));
-				result = false;
+				permitted = false;
 			}
 		} else {
-			result = fromIndexes.stream()
+			permitted = fromIndexes.stream()
 				.anyMatch(innerOperation);
 		}
 
-		return result;
+		return permitted ? Result.permitted().addAll(successfullRequests) : DENIED;
 	}
 
 	private List<Integer> computeIndexes(Attributes attributesToMatch) {
@@ -283,7 +311,7 @@ public class Semantics {
 				.toList();
 	}
 
-	private boolean evaluateExchangeRequest(int policyIndex,
+	private Result evaluateExchangeRequest(int policyIndex,
 			int ruleIndex,
 			SingleExchange exchange,
 			IndexParticipant exchangeRequestRequester,
@@ -293,15 +321,12 @@ public class Semantics {
 			exchangeRequestRequester,
 			exchange.resource(),
 			exchangeRequestFrom);
-		boolean result = false;
 		if (requests.stream()
 				.anyMatch(existingRequest -> requestComply.test(exchangeRequest, existingRequest))) {
 			trace.add(String.format("%s: compliant request found %s", traceForRule(policyIndex, ruleIndex), exchangeRequest));
-			result = true;
+			return Result.permitted();
 		}
-		if (!result)
-			result = evaluate(exchangeRequest, requests);
-		return result;
+		return evaluate(exchangeRequest, requests);
 	}
 
 	private String traceForRule(int policyIndex, int ruleIndex) {
