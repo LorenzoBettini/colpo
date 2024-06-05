@@ -1936,7 +1936,7 @@ class SemanticsTest {
 	private void assertResultTrue(Request request, String expectedTrace, String expectedRequests) {
 		var result = semantics.evaluate(request);
 		assertAll(
-			() -> { assertTrue(result.isPermitted()); },
+			() -> assertTrue(result.isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
 			() -> assertEquals(expectedRequests, 
 				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
