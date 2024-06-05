@@ -46,7 +46,7 @@ public class Semantics {
 	private RequestComply requestComply = new DefaultRequestComply(matcher);
 
 	private static final ContextHandler EMPTY_CONTEXT_HANDLER = new ContextHandler();
-	public static final Result DENIED = new Result(false);
+	private static final Result DENIED = new Result(false);
 
 	public Semantics(Policies policies) {
 		this.policies = policies;
