@@ -187,13 +187,15 @@ public class Semantics {
 			trace.addAndThenIndent(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 		}
 
-		if (exchange instanceof OrExchange orExchange) {
+		switch (exchange) {
+		case OrExchange orExchange -> {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
 			if (!result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
 				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
 			}
-		} else if (exchange instanceof AndExchange orExchange) {
+		}
+		case AndExchange orExchange -> {
 			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
 			if (result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
@@ -204,10 +206,9 @@ public class Semantics {
 					result = DENIED;
 				}
 			}
-		} else if (exchange instanceof SingleExchange singleExchange) {
-			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
-		} else {// exchange is null
-			result = Result.permitted();
+		}
+		case SingleExchange singleExchange -> result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
+		case null, default -> result = Result.permitted();
 		}
 
 		if (isComposite) {
