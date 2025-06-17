@@ -3,7 +3,7 @@ package colpo.core;
 /**
  * Default implementation of "comply": same requester, same from, and the
  * newRequest must match with the existing one.
- * 
+ *
  * @author Lorenzo Bettini
  */
 public class DefaultRequestComply implements RequestComply {

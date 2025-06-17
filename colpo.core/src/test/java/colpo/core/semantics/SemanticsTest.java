@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import colpo.core.AndExchange;
 import colpo.core.Attributes;
 import colpo.core.ContextHandler;
-import colpo.core.SingleExchange;
 import colpo.core.ExpressionWithDescription;
 import colpo.core.OrExchange;
 import colpo.core.Policies;
@@ -26,6 +25,7 @@ import colpo.core.Policy;
 import colpo.core.Request;
 import colpo.core.Rule;
 import colpo.core.Rules;
+import colpo.core.SingleExchange;
 
 class SemanticsTest {
 
@@ -733,7 +733,7 @@ class SemanticsTest {
 
 		// as long as a request is found with the same requester and from
 		// then we consider the exchange succeeds
-		semantics.requestComply((newRequest, existingRequest) -> 
+		semantics.requestComply((newRequest, existingRequest) ->
 			newRequest.requester().equals(existingRequest.requester())
 			&& newRequest.from().equals(existingRequest.from())
 		);
@@ -1938,7 +1938,7 @@ class SemanticsTest {
 		assertAll(
 			() -> assertTrue(result.isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
-			() -> assertEquals(expectedRequests, 
+			() -> assertEquals(expectedRequests,
 				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
 		);
 	}

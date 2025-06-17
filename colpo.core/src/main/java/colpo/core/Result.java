@@ -5,7 +5,7 @@ import java.util.Collection;
 
 /**
  * The result of an evaluation.
- * 
+ *
  * @author Lorenzo Bettini
  */
 public class Result {
