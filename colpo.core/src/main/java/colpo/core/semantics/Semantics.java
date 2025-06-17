@@ -208,7 +208,7 @@ public class Semantics {
 			}
 		}
 		case SingleExchange singleExchange -> result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
-		case null, default -> result = Result.permitted();
+		case null -> result = Result.permitted();
 		}
 
 		if (isComposite) {
