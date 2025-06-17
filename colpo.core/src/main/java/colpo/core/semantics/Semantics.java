@@ -188,18 +188,18 @@ public class Semantics {
 		}
 
 		switch (exchange) {
-		case OrExchange orExchange -> {
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
+		case OrExchange(var left, var right) -> {
+			result = evaluateExchange(policyIndex, ruleIndex, left, request, requests);
 			if (!result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
-				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				result = evaluateExchange(policyIndex, ruleIndex, right, request, requests);
 			}
 		}
-		case AndExchange orExchange -> {
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
+		case AndExchange(var left, var right) -> {
+			result = evaluateExchange(policyIndex, ruleIndex, left, request, requests);
 			if (result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
-				var result1 = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				var result1 = evaluateExchange(policyIndex, ruleIndex, right, request, requests);
 				if (result1.isPermitted()) {
 					result.addAll(result1.getRequests());
 				} else {
