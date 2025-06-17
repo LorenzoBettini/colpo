@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package colpo.core;
 
@@ -18,9 +18,10 @@ public class Attributes {
 
 	public Attributes add(String attributeName, Object attributeValue) {
 		Object previous = attributeMap.put(attributeName, attributeValue);
-		if (previous != null)
+		if (previous != null) {
 			throw new IllegalArgumentException(
 				String.format("'%s' is already present as '%s'", attributeName, previous));
+		}
 		return this;
 	}
 
@@ -52,12 +53,12 @@ public class Attributes {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		Attributes other = (Attributes) obj;
 		return Objects.equals(attributeMap, other.attributeMap);
 	}

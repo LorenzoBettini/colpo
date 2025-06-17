@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 /**
  * @author Lorenzo Bettini
- * 
+ *
  * Our Policies are indexed starting from 1, not from 0.
  */
 public class Policies {
 
 	public static record PolicyData(int index, Policy policy) {
-		
+
 	}
 
 	private List<Policy> collection = new ArrayList<>();

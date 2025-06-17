@@ -1,6 +1,8 @@
 package colpo.core;
 
-import static colpo.core.Participants.*;
+import static colpo.core.Participants.allSuchThat;
+import static colpo.core.Participants.anySuchThat;
+import static colpo.core.Participants.index;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

@@ -1,6 +1,6 @@
 package colpo.core.semantics;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class TraceTest {
 
 	private Trace trace;
-	
+
 	@BeforeEach
 	void init() {
 		trace = new Trace();

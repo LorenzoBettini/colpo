@@ -1,8 +1,10 @@
 package colpo.core;
 
 /**
+ * A sealed interface representing an exchange in the Colpo system.
+ * 
  * @author Lorenzo Bettini
  */
-public interface Exchange {
+public sealed interface Exchange permits SingleExchange, CompositeExchange {
 
 }

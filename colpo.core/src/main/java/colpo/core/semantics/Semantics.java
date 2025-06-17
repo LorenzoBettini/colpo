@@ -20,8 +20,6 @@ import colpo.core.CompositeExchange;
 import colpo.core.ContextHandler;
 import colpo.core.DefaultRequestComply;
 import colpo.core.Exchange;
-import colpo.core.RequestFromParticipant;
-import colpo.core.Result;
 import colpo.core.IndexParticipant;
 import colpo.core.OrExchange;
 import colpo.core.Participant;
@@ -30,6 +28,8 @@ import colpo.core.Policies.PolicyData;
 import colpo.core.Policy;
 import colpo.core.Request;
 import colpo.core.RequestComply;
+import colpo.core.RequestFromParticipant;
+import colpo.core.Result;
 import colpo.core.Rule;
 import colpo.core.Rules;
 import colpo.core.SingleExchange;
@@ -92,8 +92,9 @@ public class Semantics {
 					permitted = policiesToEvaluate.stream()
 						.anyMatch(evaluatePredicate);
 				}
-				if (permitted)
+				if (permitted) {
 					result = Result.permitted().addAll(successfullRequests);
+				}
 			}
 		}
 		trace.removeIndentAndThenAdd(String.format("result: %s", result.isPermitted()));
@@ -102,8 +103,9 @@ public class Semantics {
 
 	private boolean collectingRequests(Result result, Collection<Request> requests) {
 		var permitted = result.isPermitted();
-		if (permitted)
+		if (permitted) {
 			requests.addAll(result.getRequests());
+		}
 		return permitted;
 	}
 
@@ -143,8 +145,9 @@ public class Semantics {
 				policyIndex, request));
 		try {
 			boolean outcome = tryMatch(traceForRule(policyIndex, ruleIndex), "resource", request.resource(), rule.getResource());
-			if (!outcome)
+			if (!outcome) {
 				return DENIED;
+			}
 			outcome = rule.getCondition().evaluate(
 				name -> Stream.of(
 							request.resource(),
@@ -156,13 +159,15 @@ public class Semantics {
 					.orElseThrow(() -> new UndefinedName(name))
 			);
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), outcome));
-			if (!outcome)
+			if (!outcome) {
 				return DENIED;
+			}
 			var result = evaluateExchange(policyIndex, ruleIndex, rule.getExchange(), request, requests);
-			if (result.isPermitted())
+			if (result.isPermitted()) {
 				return Result.permitted()
 						.add(request)
 						.addAll(result.getRequests());
+			}
 			return result;
 		} catch (Exception e) {
 			trace.add(String.format("%s: condition %s -> %s", traceForRule(policyIndex, ruleIndex), rule.getCondition(), e.getMessage()));
@@ -182,26 +187,28 @@ public class Semantics {
 			trace.addAndThenIndent(String.format("%s: evaluating %s", traceForRule(policyIndex, ruleIndex), exchange));
 		}
 
-		if (exchange instanceof OrExchange orExchange) {
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
+		switch (exchange) {
+		case OrExchange(var left, var right) -> {
+			result = evaluateExchange(policyIndex, ruleIndex, left, request, requests);
 			if (!result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: OR", traceForRule(policyIndex, ruleIndex)));
-				result = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
+				result = evaluateExchange(policyIndex, ruleIndex, right, request, requests);
 			}
-		} else if (exchange instanceof AndExchange orExchange) {
-			result = evaluateExchange(policyIndex, ruleIndex, orExchange.left(), request, requests);
+		}
+		case AndExchange(var left, var right) -> {
+			result = evaluateExchange(policyIndex, ruleIndex, left, request, requests);
 			if (result.isPermitted()) {
 				trace.addInPreviousIndent(String.format("%s: AND", traceForRule(policyIndex, ruleIndex)));
-				var result1 = evaluateExchange(policyIndex, ruleIndex, orExchange.right(), request, requests);
-				if (result1.isPermitted())
+				var result1 = evaluateExchange(policyIndex, ruleIndex, right, request, requests);
+				if (result1.isPermitted()) {
 					result.addAll(result1.getRequests());
-				else
+				} else {
 					result = DENIED;
+				}
 			}
-		} else if (exchange instanceof SingleExchange singleExchange) {
-			result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
-		} else {// exchange is null
-			result = Result.permitted();
+		}
+		case SingleExchange singleExchange -> result = evaluate(policyIndex, ruleIndex, singleExchange, request, requests);
+		case null -> result = Result.permitted();
 		}
 
 		if (isComposite) {

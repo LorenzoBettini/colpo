@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 public class Rules {
 
 	public static record RuleData(int index, Rule rule) {
-		
+
 	}
 
 	private List<Rule> collection = new ArrayList<>();

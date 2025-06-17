@@ -497,7 +497,7 @@ class CouriersExampleTest {
 		assertAll(
 			() -> assertTrue(result.isPermitted()),
 			() -> assertEquals(expectedTrace, semantics.getTrace().toString()),
-			() -> assertEquals(expectedRequests, 
+			() -> assertEquals(expectedRequests,
 				result.getRequests().stream().map(Object::toString).collect(Collectors.joining("\n")))
 		);
 	}
